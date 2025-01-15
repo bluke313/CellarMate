@@ -1,22 +1,26 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Link } from 'expo-router';
 import WineItem from "../components/WineItem";
 import { colors } from "../assets/theme";
-import { initDatabase, addItem, getItems } from './Database';
+import { initDatabase, addItem, getItems } from './database';
 
-export default function App() {
+export default function home() {
 
     const [wineList, setWineList] = useState([]);
 
     useEffect(() => {
         initDatabase();
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null); addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null); addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null); addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null); addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
+        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         getItems(setWineList);
@@ -37,9 +41,11 @@ export default function App() {
                         data={item}
                     />
                 ))}
-                <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+</Text>
-                </TouchableOpacity>
+                <Link href="/entry/123">
+                    <TouchableOpacity style={styles.addButton}>
+                        <Text style={styles.addButtonText}>+</Text>
+                    </TouchableOpacity>
+                </Link>
             </ScrollView>
         </View>
     );
