@@ -33,7 +33,7 @@ const makeFit = (text) => {
     return retval;
 };
 
-export default function WineItem(props) {
+export function WineItem(props) {
     const [modalVisible, setModalVisible] = useState(false);
 
     return (

@@ -3,34 +3,18 @@ import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-nati
 import { Link } from 'expo-router';
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
-import { initDatabase, addItem, getItems } from '../components/Database';
 
-export default function home() {
+export default function test() {
 
     const [wineList, setWineList] = useState([]);
 
     useEffect(() => {
-        initDatabase();
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        getItems(setWineList);
     }, []);
 
     return (
         <View style={styles.container}>
             <View style={styles.menuBarContainer}>
-                <Text style={styles.text}>Welcome Home</Text>
-                <Link href="/home" style={styles.text}>Go Home</Link>
+                <Text style={styles.text}>Welcome Test</Text>
             </View>
             <TouchableOpacity style={styles.addButton}>
                 <Text style={styles.addButtonText}>+</Text>
@@ -42,7 +26,7 @@ export default function home() {
                         data={item}
                     />
                 ))}
-                <Link href="/home">
+                <Link href="/">
                     <TouchableOpacity style={styles.addButton}>
                         <Text style={styles.addButtonText}>+</Text>
                     </TouchableOpacity>
@@ -59,7 +43,7 @@ const styles = StyleSheet.create({
     },
     text: {
         color: colors.text,
-        fontSize: 30,
+        fontSize: 50,
     },
     listContaier: {
         flex: 1,
