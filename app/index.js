@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Link } from 'expo-router';
+import { router, Link } from 'expo-router';
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
 import { initDatabase, addItem, getItems } from '../components/Database';
@@ -8,33 +8,19 @@ import { initDatabase, addItem, getItems } from '../components/Database';
 export default function home() {
 
     const [wineList, setWineList] = useState([]);
+    const [reload, setReload] = useState(0);
 
     useEffect(() => {
         initDatabase();
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
-        addItem("Pinot Noir", "California", 2, "B. Lovely", "very tasty", 2021, null);
         getItems(setWineList);
-    }, []);
+    }, [reload]);
 
     return (
         <View style={styles.container}>
             <View style={styles.menuBarContainer}>
                 <Text style={styles.text}>Welcome Home</Text>
-                <Link href="/home" style={styles.text}>Go Home</Link>
+                <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text>
             </View>
-            <TouchableOpacity style={styles.addButton}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
             <ScrollView style={styles.listContaier}>
                 {wineList.map((item, index) => (
                     <WineItem
@@ -42,11 +28,9 @@ export default function home() {
                         data={item}
                     />
                 ))}
-                <Link href="/home">
-                    <TouchableOpacity style={styles.addButton}>
-                        <Text style={styles.addButtonText}>+</Text>
-                    </TouchableOpacity>
-                </Link>
+                <TouchableOpacity onPress={() => router.push("/newEntry")} style={styles.addButton}>
+                    <Text style={styles.addButtonText}>+</Text>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );
@@ -64,9 +48,18 @@ const styles = StyleSheet.create({
     listContaier: {
         flex: 1,
         marginTop: 25,
+        borderColor: colors.primary,
+        borderWidth: 5,
+        borderRadius: 10,
     },
     menuBarContainer: {
-        height: 50,
+        borderColor: colors.primary,
+        borderWidth: 5,
+        borderRadius: 10,
+        padding: 10,
+        marginHorizontal: 10,
+        borderStyle: 'solid',
+        height: 100,
     },
     addButton: {
         borderWidth: 2,

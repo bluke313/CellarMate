@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 import { colors } from "../assets/theme";
 import Svg, { Rect } from "react-native-svg";
 
@@ -37,7 +38,7 @@ export function WineItem(props) {
     const [modalVisible, setModalVisible] = useState(false);
 
     return (
-        <View style={styles.container}>
+        <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
             <View style={{ flexDirection: "row" }}>
                 <View style={styles.image}></View>
                 <View style={styles.leftCaptions}>
@@ -59,7 +60,7 @@ export function WineItem(props) {
                     <Text style={styles.text}>{props.data.vintage}</Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 };
 
