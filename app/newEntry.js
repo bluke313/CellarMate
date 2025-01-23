@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image } from 'react-native';
 import { Link, router } from 'expo-router';
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
@@ -13,7 +13,8 @@ export default function newEntry() {
     const [brand, setBrand] = useState(null);
     const [origin, setOrigin] = useState(null);
     const [notes, setNotes] = useState(null);
-    const [photoPath, setPhotoPath] = useState("no photo taken");
+    const [photo, setPhoto] = useState(null);
+    const [photoUri, setPhotoUri] = useState(null);
 
     const [modalVisible, setModalVisible] = useState(true);
 
@@ -21,7 +22,7 @@ export default function newEntry() {
     }, []);
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Modal 
                 style={styles.modal} 
                 visible={modalVisible}
@@ -31,14 +32,15 @@ export default function newEntry() {
                 <View style={styles.modalView}>
                     <Text style={styles.text}>this is my modal</Text>
                     <Text style={styles.text} onPress={() => setModalVisible(false)}>close modal</Text>
-                    <Camera/>
+                    <Camera setPhotoUri={setPhotoUri} setModalVisible={setModalVisible}/>
+                    <Text style={styles.text}>this is my modal</Text>
                 </View>
             </Modal>
             <TouchableOpacity onPress={() => setModalVisible(true)}><Text style={styles.text}>Access Camera</Text></TouchableOpacity>
             <Text style={styles.text}></Text>
             <View style={styles.textInputContainer}>
-                <Text style={styles.textInputTitle}>PhotoPath</Text>
-                <Text style={styles.textInput}>{photoPath}</Text>
+                <Text style={styles.textInputTitle}>Photo</Text>
+                {photoUri ? (<Image source={{ uri: photoUri }} style={styles.image} resizeMode='contain'></Image>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
             </View>
             <View style={styles.textInputContainer}>
                 <Text style={styles.textInputTitle}>Variety</Text>
@@ -64,10 +66,10 @@ export default function newEntry() {
                 <Text style={styles.textInputTitle}>Notes</Text>
                 <TextInput style={styles.textInput} value={notes} onChangeText={setNotes}></TextInput>
             </View>
-            <TouchableOpacity onPress={() => addItem(variety, origin, rating, brand, notes, vintage, photoPath)} style={styles.addButton}>
+            <TouchableOpacity onPress={() => addItem(variety, origin, rating, brand, notes, vintage, photoUri)} style={styles.addButton}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -137,7 +139,15 @@ const styles = StyleSheet.create({
         width: '60%',
     },
     modalView: {
-        backgroundColor: colors.background,
         flex: 1,
+        backgroundColor: colors.background,
+    },
+    image: {
+        flex: 1,
+        height: 300,
+        borderStyle: 'solid',
+        borderColor: colors.accent,
+        borderWidth: 2,
+        borderRadius: 10,
     }
 });

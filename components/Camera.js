@@ -3,7 +3,7 @@ import { useState, useRef } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 
-export function Camera() {
+export function Camera(props) {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -28,20 +28,19 @@ export function Camera() {
     // setFacing(current => (current === 'back' ? 'front' : 'back'));
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
-      console.log(photo.uri);
+      props.setPhotoUri(photo);
+      props.setModalVisible(false);
     }
-    router.back();
   }
 
   return (
     <View style={styles.container}>
-      <Text>Here is my camera</Text>
-      {/* <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing}>
+      <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
           </TouchableOpacity>
         </View>
-      </CameraView> */}
+      </CameraView>
     </View>
   );
 }
