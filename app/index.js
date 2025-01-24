@@ -1,9 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, Link } from 'expo-router';
+import * as FileSystem from 'expo-file-system';
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
 import { initDatabase, addItem, getItems } from '../components/Database';
+
+const photosDir = `${FileSystem.documentDirectory}photos`;
+
+const logPhotos = async () => {
+    try {
+        const dirInfo = await FileSystem.getInfoAsync(photosDir)
+        if (!dirInfo.exists) {
+            console.log('Photos folder does not exist.');
+            setPhotos([]);
+            return;
+        }
+        const files = await FileSystem.readDirectoryAsync(photosDir);
+        const photoUris = files.map((file) => `${photosDir}/${file}`);
+        console.log('Files in photos folder:', photoUris);
+    } catch (error) {
+        console.error('Error loging photos:', error);
+    }
+};
 
 export default function home() {
 
@@ -20,6 +39,7 @@ export default function home() {
             <View style={styles.menuBarContainer}>
                 <Text style={styles.text}>Welcome Home</Text>
                 <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text>
+                <Text onPress={() => logPhotos()} style={styles.text}>Check Files</Text>
             </View>
             <ScrollView style={styles.listContaier}>
                 {wineList.map((item, index) => (

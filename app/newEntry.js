@@ -42,6 +42,9 @@ export default function newEntry() {
                 <Text style={styles.textInputTitle}>Photo</Text>
                 {photoUri ? (<Image source={{ uri: photoUri }} style={styles.image} resizeMode='contain'></Image>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
             </View>
+            {/* <View style={styles.textInputContainer}>
+                <Text style={styles.text}>{photoUri ? `${photoUri}` : `no photo taken`}</Text>
+            </View> */}
             <View style={styles.textInputContainer}>
                 <Text style={styles.textInputTitle}>Variety</Text>
                 <TextInput style={styles.textInput} value={variety} onChangeText={setVariety}></TextInput>
