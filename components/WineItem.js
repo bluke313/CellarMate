@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Platform, TouchableOpacity, Image } from "react-native";
 import { router } from "expo-router";
-import { colors } from "../assets/theme";
 import Svg, { Rect } from "react-native-svg";
+
+import { colors } from "../assets/theme";
+import { photosDir } from '../components/Database';
 
 const convertRating = (rating) => {
     var retval = "";
@@ -40,7 +42,9 @@ export function WineItem(props) {
     return (
         <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
             <View style={{ flexDirection: "row" }}>
-                <View style={styles.image}></View>
+                <View style={styles.imageContainer}>
+                    <Image source={{ uri: `${photosDir}/${props.data.photoUri}` }} style={styles.image} resizeMode='fit'></Image>
+                </View>
                 <View style={styles.leftCaptions}>
                     <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
                     <Text style={styles.text}>{makeFit(props.data.origin)}</Text>

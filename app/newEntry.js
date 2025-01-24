@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image } from 'react-native';
 import { Link, router } from 'expo-router';
+
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
-import { initDatabase, addItem, getItems } from '../components/Database';
+import { initDatabase, addItem, getItems, photosDir } from '../components/Database';
 import { Camera } from '../components/Camera';
 
 export default function newEntry() {
@@ -40,7 +41,7 @@ export default function newEntry() {
             <Text style={styles.text}></Text>
             <View style={styles.textInputContainer}>
                 <Text style={styles.textInputTitle}>Photo</Text>
-                {photoUri ? (<Image source={{ uri: photoUri }} style={styles.image} resizeMode='contain'></Image>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
+                {photoUri ? (<Image source={{ uri: `${photosDir}/${photoUri}` }} style={styles.image} resizeMode='contain'></Image>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
             </View>
             {/* <View style={styles.textInputContainer}>
                 <Text style={styles.text}>{photoUri ? `${photoUri}` : `no photo taken`}</Text>
@@ -69,7 +70,7 @@ export default function newEntry() {
                 <Text style={styles.textInputTitle}>Notes</Text>
                 <TextInput style={styles.textInput} value={notes} onChangeText={setNotes}></TextInput>
             </View>
-            <TouchableOpacity onPress={() => addItem(variety, origin, rating, brand, notes, vintage, photoUri)} style={styles.addButton}>
+            <TouchableOpacity onPress={() => {addItem(variety, origin, rating, brand, notes, vintage, photoUri); router.back()}} style={styles.addButton}>
                 <Text style={styles.addButtonText}>+</Text>
             </TouchableOpacity>
         </ScrollView>
@@ -117,19 +118,19 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     textInputContainer: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         marginHorizontal: 10,
         paddingVertical: 10,
         borderStyle: 'solid',
         borderColor: colors.primary,
         borderTopWidth: 2,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     textInputTitle: {
         color: colors.text,
         fontSize: 24,
-        width: '30%',
+        marginHorizontal: 10,
     },
     textInput: {
         backgroundColor: colors.background,
@@ -139,7 +140,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         borderStyle: 'solid',
         color: colors.text,
-        width: '60%',
+        width: '90%',
+        height: 50,
     },
     modalView: {
         flex: 1,
@@ -147,7 +149,8 @@ const styles = StyleSheet.create({
     },
     image: {
         flex: 1,
-        height: 300,
+        height: 400,
+        width: 300,
         borderStyle: 'solid',
         borderColor: colors.accent,
         borderWidth: 2,

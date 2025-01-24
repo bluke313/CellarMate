@@ -5,12 +5,13 @@ import * as FileSystem from 'expo-file-system';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
+import { photosDir } from './Database';
+
 export function Camera(props) {
   const [facing, setFacing] = useState('front');
   const [permission, requestPermission] = useCameraPermissions();
 
   const cameraRef = useRef(null);
-  const photosDir = `${FileSystem.documentDirectory}photos`;
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -45,7 +46,8 @@ export function Camera(props) {
         to: newFilePath,
       });
 
-      props.setPhotoUri(newFilePath);
+      
+      props.setPhotoUri(fileName);
       props.setModalVisible(false);
     }
   }

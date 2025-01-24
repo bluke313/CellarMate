@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from "../../assets/theme";
-import { getItemFromId, deleteItem } from '../../components/Database';
+import { getItemFromId, deleteItem, collectTrash } from '../../components/Database';
 import { useLocalSearchParams, router } from 'expo-router';
 
 export default function WinePage() {
