@@ -31,17 +31,15 @@ export default function newEntry() {
                 animationType='slide'    
             >
                 <View style={styles.modalView}>
-                    <Text style={styles.text}>this is my modal</Text>
-                    <Text style={styles.text} onPress={() => setModalVisible(false)}>close modal</Text>
+                    <Text style={styles.modalText} onPress={() => setModalVisible(false)}>Snap picture of wine label!</Text>
                     <Camera setPhotoUri={setPhotoUri} setModalVisible={setModalVisible}/>
-                    <Text style={styles.text}>this is my modal</Text>
                 </View>
             </Modal>
             <TouchableOpacity onPress={() => setModalVisible(true)}><Text style={styles.text}>Access Camera</Text></TouchableOpacity>
             <Text style={styles.text}></Text>
             <View style={styles.textInputContainer}>
                 <Text style={styles.textInputTitle}>Photo</Text>
-                {photoUri ? (<Image source={{ uri: `${photosDir}/${photoUri}` }} style={styles.image} resizeMode='contain'></Image>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
+                {photoUri ? (<Image source={{ uri: `${photosDir}/${photoUri}` }} style={styles.image} resizeMode='cover'/>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
             </View>
             {/* <View style={styles.textInputContainer}>
                 <Text style={styles.text}>{photoUri ? `${photoUri}` : `no photo taken`}</Text>
@@ -85,6 +83,11 @@ const styles = StyleSheet.create({
     text: {
         color: colors.text,
         fontSize: 30,
+    },
+    modalText: {
+        color: colors.text,
+        fontSize: 30,
+        textAlign: 'center',
     },
     listContaier: {
         flex: 1,
@@ -148,8 +151,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
     },
     image: {
-        flex: 1,
-        height: 400,
+        height: 300,
         width: 300,
         borderStyle: 'solid',
         borderColor: colors.accent,

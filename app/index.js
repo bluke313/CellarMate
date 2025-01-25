@@ -103,6 +103,9 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
     },
     addButton: {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'space-around',
         position: 'absolute',
         bottom: 20,
         borderWidth: 2,

@@ -59,10 +59,14 @@ export function Camera(props) {
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing}>
+        <View style={styles.boundaryContainer}></View>
+        <View style={styles.exitButtonContainer}>
+          <TouchableOpacity style={styles.exitButton} onPress={props.setModalVisible}><Text style={styles.exitButtonText}>x</Text></TouchableOpacity>
+        </View>
         <View style={styles.takePictureButtonContainer}>
           <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
-          <TouchableOpacity style={styles.flipButton} onPress={flipCamera}/>
         </View>
+        <TouchableOpacity style={styles.flipButton} onPress={flipCamera}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
       </CameraView>
     </View>
   );
@@ -78,11 +82,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   camera: {
-    flex: 1,
     borderStyle: 'solid',
     borderColor: 'black',
     borderWidth: 5,
     borderRadius: 10,
+    height: '100%',
     margin: 20,
   },
   takePictureButtonContainer: {
@@ -103,18 +107,46 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,.95)',
   },
   flipButton: {
-    height: 75,
-    width: 75,
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
     alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: '50%',
-    borderWidth: 4,
-    borderStyle: 'solid',
-    borderColor: 'rgba(0,0,0,.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   text: {
     fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
   },
+  flipButtonTexttext: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  exitButtonContainer: {
+    alignSelf: 'flex-end',
+  },
+  exitButton: {
+    padding: 10,
+    height: 60,
+    width: 50,
+    // backgroundColor: 'rgba(255, 0, 0, 0.35)',
+    // borderColor: 'red',
+    // borderRadius: 20,
+    // borderStyle: 'solid',
+    // borderWidth: 2,
+  },
+  exitButtonText: {
+    fontSize: 30, 
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  boundaryContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,.5)',
+  }
 });

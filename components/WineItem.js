@@ -43,7 +43,7 @@ export function WineItem(props) {
         <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
             <View style={{ flexDirection: "row" }}>
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: `${photosDir}/${props.data.photoUri}` }} style={styles.image} resizeMode='fit'></Image>
+                    <Image source={{ uri: `${photosDir}/${props.data.photoUri}` }} style={styles.image} resizeMode='fit'/>
                 </View>
                 <View style={styles.leftCaptions}>
                     <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
