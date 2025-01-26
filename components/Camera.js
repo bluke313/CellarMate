@@ -1,6 +1,6 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,6 +10,8 @@ import { photosDir } from './Database';
 export function Camera(props) {
   const [facing, setFacing] = useState('front');
   const [permission, requestPermission] = useCameraPermissions();
+  const [cameraWidth, setCameraWidth] = useState(0);
+  const [cameraHeight, setCameraHeight] = useState(0);
 
   const cameraRef = useRef(null);
 
@@ -27,6 +29,11 @@ export function Camera(props) {
       </View>
     );
   }
+
+  const handleLayout = (event) => {
+    setCameraWidth(event.nativeEvent.layout.width);
+    setCameraHeight(event.nativeEvent.layout.height);
+  };
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -46,7 +53,7 @@ export function Camera(props) {
         to: newFilePath,
       });
 
-      
+
       props.setPhotoUri(fileName);
       props.setModalVisible(false);
     }
@@ -57,37 +64,48 @@ export function Camera(props) {
   }
 
   return (
-    <View style={styles.container}>
-      <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing}>
-        <View style={styles.boundaryContainer}></View>
-        <View style={styles.exitButtonContainer}>
-          <TouchableOpacity style={styles.exitButton} onPress={props.setModalVisible}><Text style={styles.exitButtonText}>x</Text></TouchableOpacity>
-        </View>
-        <View style={styles.takePictureButtonContainer}>
-          <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
-        </View>
-        <TouchableOpacity style={styles.flipButton} onPress={flipCamera}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
-      </CameraView>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
+      <View style={styles.container}>
+        <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
+          <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} >
+            <Text style={styles.caption}>Capture a picture of the wine label!</Text>
+          </View>
+          <View style={[styles.overlay, styles.bottomOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} />
+          <View style={styles.exitButtonContainer}>
+            <TouchableOpacity style={styles.exitButton} onPress={() => props.setModalVisible(false)}><Text style={styles.exitButtonText}>x</Text></TouchableOpacity>
+          </View>
+          <View style={styles.takePictureButtonContainer}>
+            <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
+          </View>
+          <TouchableOpacity style={styles.flipButton} onPress={flipCamera}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
+        </CameraView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: 'relative',
     justifyContent: 'center',
   },
-  message: {
+  caption: {
+    position: 'absolute',
     textAlign: 'center',
-    paddingBottom: 10,
+    color: 'black',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    fontSize: 40,
+    margin: 10,
+    marginRight: 50,
   },
   camera: {
-    borderStyle: 'solid',
-    borderColor: 'black',
-    borderWidth: 5,
-    borderRadius: 10,
+    // borderStyle: 'solid',
+    // borderColor: 'black',
+    // borderWidth: 5,
+    // borderRadius: 10,
     height: '100%',
-    margin: 20,
+    width: '100%',
   },
   takePictureButtonContainer: {
     flex: 1,
@@ -100,11 +118,11 @@ const styles = StyleSheet.create({
     height: 75,
     width: 75,
     alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(187, 187, 187, 0.8)',
     borderRadius: '50%',
     borderWidth: 4,
     borderStyle: 'solid',
-    borderColor: 'rgba(0,0,0,.95)',
+    borderColor: 'rgba(109, 109, 109, 0.95)',
   },
   flipButton: {
     position: 'absolute',
@@ -119,18 +137,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
-  flipButtonTexttext: {
+  flipButtonText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    color: 'black',
   },
   exitButtonContainer: {
     alignSelf: 'flex-end',
   },
   exitButton: {
-    padding: 10,
-    height: 60,
-    width: 50,
+    paddingTop: 10,
+    height: 80,
+    width: 70,
     // backgroundColor: 'rgba(255, 0, 0, 0.35)',
     // borderColor: 'red',
     // borderRadius: 20,
@@ -138,15 +155,31 @@ const styles = StyleSheet.create({
     // borderWidth: 2,
   },
   exitButtonText: {
-    fontSize: 30, 
+    color: 'black',
+    fontSize: 40,
     textAlign: 'center',
     textAlignVertical: 'center',
+    // fontWeight: 'bold',
   },
-  boundaryContainer: {
+  overlay: {
     position: 'absolute',
-    width: '100%',
-    height: 50,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(0,0,0,.5)',
-  }
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  topOverlay: {
+    top: 0,
+    left: 0,
+    right: 0,
+    borderColor: 'black',
+    borderBottomWidth: 2,
+    borderStyle: 'solid',
+  },
+  bottomOverlay: {
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderColor: 'black',
+    borderTopWidth: 2,
+    borderStyle: 'solid',
+  },
+
 });

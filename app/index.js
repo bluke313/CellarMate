@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, SafeAreaView, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { router, Link, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 import { WineItem } from "../components/WineItem";
@@ -55,26 +55,29 @@ export default function home() {
     useFocusEffect(() => { getItems(setWineList) });
 
     return (
-        <View style={styles.container}>
-            <View style={styles.menuBarContainer}>
-                {/* <Text style={styles.text}>Welcome Home</Text> */}
-                <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text>
-                <Text onPress={() => logPhotos()} style={styles.text}>Log Files</Text>
-                <Text onPress={() => collectTrash()} style={styles.text}>Collect Trash</Text>
-                {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
+            <StatusBar barStyle='light-content' backgroundColor='black' />
+            <View style={styles.container}>
+                <View style={styles.menuBarContainer}>
+                    {/* <Text style={styles.text}>Welcome Home</Text> */}
+                    <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text>
+                    <Text onPress={() => logPhotos()} style={styles.text}>Log Files</Text>
+                    <Text onPress={() => collectTrash()} style={styles.text}>Collect Trash</Text>
+                    {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
+                </View>
+                <ScrollView style={styles.listContaier}>
+                    {wineList.map((item, index) => (
+                        <WineItem
+                            key={index}
+                            data={item}
+                        />
+                    ))}
+                </ScrollView>
+                <TouchableOpacity onPress={() => router.push("/newEntry")} style={styles.addButton}>
+                    <Text style={styles.addButtonText}>+</Text>
+                </TouchableOpacity>
             </View>
-            <ScrollView style={styles.listContaier}>
-                {wineList.map((item, index) => (
-                    <WineItem
-                        key={index}
-                        data={item}
-                    />
-                ))}
-            </ScrollView>
-            <TouchableOpacity onPress={() => router.push("/newEntry")} style={styles.addButton}>
-                <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 }
 
