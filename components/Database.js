@@ -2,8 +2,11 @@ import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 
 const db = SQLite.openDatabaseAsync('CellarMateDatabase');
+
+// Directory of persistent storage for photos
 export const photosDir = `${FileSystem.documentDirectory}photos`;
 
+// Initialize the database
 export const initDatabase = async () => {
     try {
         await (await db).execAsync(`
@@ -15,9 +18,14 @@ export const initDatabase = async () => {
     }
 };
 
-export const addItem = async (variety, origin, rating, brand, notes, vintage, photoUri) => {
+// Add a wine to the database. Moves the photo from temporary storage to persistent storage
+export const addItem = async (variety, origin, rating, brand, notes, vintage, photoPath, photoUri) => {
     try {
         await (await db).runAsync(`INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) VALUES ('${variety}', '${origin}', ${rating}, '${brand}', '${notes}', ${vintage}, '${photoUri}');`);
+        await FileSystem.moveAsync({
+            from: photoPath,
+            to: `${photosDir}/${photoUri}`,
+        });
         console.log('Added Item: ', variety);
     }
     catch (error) {
@@ -25,6 +33,7 @@ export const addItem = async (variety, origin, rating, brand, notes, vintage, ph
     }
 };
 
+// Delete the wine with given id from the database
 export const deleteItem = async (id) => {
     try {
         const item = await (await db).getFirstAsync(`SELECT photoUri FROM wines WHERE id = ${id}`);
@@ -37,6 +46,7 @@ export const deleteItem = async (id) => {
     }
 };
 
+// Uses setWineList to return all wines in the database and their attributes
 export const getItems = async (setWineList) => {
     try {
         const result = await (await db).getAllAsync('SELECT * FROM wines;');
@@ -47,6 +57,7 @@ export const getItems = async (setWineList) => {
     }
 };
 
+// Uses setData to return the wine with given id and its attributes 
 export const getItemFromId = async (id, setData) => {
     try {
         const result = await (await db).getFirstAsync(`SELECT * FROM wines WHERE id = ${id}`)
@@ -57,6 +68,7 @@ export const getItemFromId = async (id, setData) => {
     }
 };
 
+// Deletes photo with given uri from persistent storage
 export const deletePhoto = async (photoUri) => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(photosDir)
@@ -72,6 +84,7 @@ export const deletePhoto = async (photoUri) => {
     }
 };
 
+// Finds unused image files and deletes them from persistent storage
 export const collectTrash = async () => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(photosDir)

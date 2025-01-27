@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, SafeAreaView, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { router, Link, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
+
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
 import { initDatabase, addItem, getItems, collectTrash } from '../components/Database';
+import { SafeWrapper } from '../components/Elements';
 
 const photosDir = `${FileSystem.documentDirectory}photos`;
 
+// Debug function to print all photo names to console
 const logPhotos = async () => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(photosDir)
@@ -24,6 +27,7 @@ const logPhotos = async () => {
     }
 };
 
+// Debug function to delete all photos from persistent storage
 const deletePhotos = async () => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(photosDir)
@@ -42,6 +46,7 @@ const deletePhotos = async () => {
     }
 };
 
+// Main home page
 export default function home() {
 
     const [wineList, setWineList] = useState([]);
@@ -55,8 +60,7 @@ export default function home() {
     useFocusEffect(() => { getItems(setWineList) });
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
-            <StatusBar barStyle='light-content' backgroundColor='black' />
+        <SafeWrapper>
             <View style={styles.container}>
                 <View style={styles.menuBarContainer}>
                     {/* <Text style={styles.text}>Welcome Home</Text> */}
@@ -66,6 +70,7 @@ export default function home() {
                     {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
                 </View>
                 <ScrollView style={styles.listContaier}>
+                    <TextInput/>
                     {wineList.map((item, index) => (
                         <WineItem
                             key={index}
@@ -77,7 +82,7 @@ export default function home() {
                     <Text style={styles.addButtonText}>+</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </SafeWrapper>
     );
 }
 

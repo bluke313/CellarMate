@@ -1,19 +1,27 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
+// Custom imports
 import { photosDir } from './Database';
+import { SafeWrapper } from '../components/Elements';
 
+// Accesses device's camera to take a picture
 export function Camera(props) {
   const [facing, setFacing] = useState('front');
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraWidth, setCameraWidth] = useState(0);
   const [cameraHeight, setCameraHeight] = useState(0);
+  const [deadAreaHeight, setDeadAreaHeight] = useState(0);
 
   const cameraRef = useRef(null);
+
+  useEffect(() => {
+    setDeadAreaHeight((cameraHeight - cameraWidth) / 2);
+  }, [cameraWidth, cameraHeight])
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -23,52 +31,55 @@ export function Camera(props) {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
-      </View>
+      <SafeWrapper>
+        <View style={styles.container}>
+          <Text style={styles.message}>We need your permission to show the camera</Text>
+          <Button onPress={requestPermission} title="grant permission" />
+        </View>
+      </SafeWrapper>
     );
   }
 
+  // Get the dimensions of the device's camera
   const handleLayout = (event) => {
     setCameraWidth(event.nativeEvent.layout.width);
     setCameraHeight(event.nativeEvent.layout.height);
   };
 
+  // Capture photo and store in temporary storage
   const takePicture = async () => {
     if (cameraRef.current) {
 
       const photo = await cameraRef.current.takePictureAsync();
 
       const fileName = `${uuidv4()}.jpg`;
-      const newFilePath = `${photosDir}/${fileName}`;
 
       const dirInfo = await FileSystem.getInfoAsync(photosDir);
       if (!dirInfo.exists) {
         await FileSystem.makeDirectoryAsync(photosDir, { intermediates: true });
       }
 
-      await FileSystem.moveAsync({
-        from: photo.uri,
-        to: newFilePath,
-      });
-
+      if (props.photoPath) {
+        await FileSystem.deleteAsync(props.photoPath);
+      }
 
       props.setPhotoUri(fileName);
+      props.setPhotoPath(photo.uri);
       props.setModalVisible(false);
     }
   }
 
+  // Switch between front and back-facing cameras
   function flipCamera() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
+    <SafeWrapper>
       <View style={styles.container}>
         <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
-          <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} >
-            <Text style={styles.caption}>Capture a picture of the wine label!</Text>
+          <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
+            {props.photoPath ? <Image source={{ uri: props.photoPath }} resizeMode='cover' style={[styles.image, { width: 0.9*deadAreaHeight, height: 0.9*deadAreaHeight, marginLeft: 0.05*deadAreaHeight, marginTop: 0.05*deadAreaHeight }]} /> : <Text style={styles.caption}>Capture a picture of the wine label!</Text>}
           </View>
           <View style={[styles.overlay, styles.bottomOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} />
           <View style={styles.exitButtonContainer}>
@@ -80,7 +91,7 @@ export function Camera(props) {
           <TouchableOpacity style={styles.flipButton} onPress={flipCamera}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
         </CameraView>
       </View>
-    </SafeAreaView>
+    </SafeWrapper>
   );
 }
 
@@ -181,5 +192,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderStyle: 'solid',
   },
+  image: {
+    borderStyle: 'solid',
+    borderColor: 'black',
+    borderWidth: 2,
+    borderRadius: 5,
+  }
 
 });
