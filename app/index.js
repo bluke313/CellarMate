@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { router, Link, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
-import { initDatabase, addItem, getItems, collectTrash } from '../components/Database';
+import * as dbFunctions from '../components/Database';
+import { sort } from '../components/Sort';
 import { SafeWrapper } from '../components/Elements';
 
 const photosDir = `${FileSystem.documentDirectory}photos`;
@@ -16,7 +17,6 @@ const logPhotos = async () => {
         const dirInfo = await FileSystem.getInfoAsync(photosDir)
         if (!dirInfo.exists) {
             console.log('Photos folder does not exist.');
-            setPhotos([]);
             return;
         }
         const files = await FileSystem.readDirectoryAsync(photosDir);
@@ -52,12 +52,24 @@ export default function home() {
     const [wineList, setWineList] = useState([]);
     const [reload, setReload] = useState(0);
 
+    const [sortedList, setSortedList] = useState([]);
+    const [sorterAtrribute, setSorterAttribute] = useState('variety');
+    const [sorterOrder, setSorterOrder] = useState('desc');
+
     useEffect(() => {
-        initDatabase();
-        collectTrash();
+        dbFunctions.initDatabase();
+        dbFunctions.collectTrash();
     }, []);
 
-    useFocusEffect(() => { getItems(setWineList) });
+    useEffect(() => {
+        sort(wineList, setSortedList, sorterAtrribute, sorterOrder);
+    }, [sorterAtrribute, sorterOrder, wineList])
+
+    useFocusEffect( 
+        useCallback(() => {
+            dbFunctions.getItems(setWineList);
+        }, [])
+    );
 
     return (
         <SafeWrapper>
@@ -66,12 +78,17 @@ export default function home() {
                     {/* <Text style={styles.text}>Welcome Home</Text> */}
                     <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text>
                     <Text onPress={() => logPhotos()} style={styles.text}>Log Files</Text>
-                    <Text onPress={() => collectTrash()} style={styles.text}>Collect Trash</Text>
+                    <Text onPress={() => dbFunctions.collectTrash()} style={styles.text}>Collect Trash</Text>
                     {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
                 </View>
                 <ScrollView style={styles.listContaier}>
-                    <TextInput/>
-                    {wineList.map((item, index) => (
+                    
+                    <TouchableOpacity onPress={() => setSorterAttribute('variety')}><Text style={styles.text}>variety</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSorterAttribute('origin')}><Text style={styles.text}>origin</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSorterAttribute('rating')}><Text style={styles.text}>rating</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSorterAttribute('vintage')}><Text style={styles.text}>vintage</Text></TouchableOpacity>
+                    {/* <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') {setSorterOrder('asc')} else {setSorterOrder('desc')} }}><Text style={styles.text}>flip order: {sorterOrder}</Text></TouchableOpacity> */}
+                    {sortedList.map((item, index) => (
                         <WineItem
                             key={index}
                             data={item}
