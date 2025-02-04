@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput, Modal, Image } from 'react-native';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 // Custom imports
-import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
-import { initDatabase, addItem, getItems, photosDir } from '../components/Database';
+import { addItem } from '../components/Database';
 import { Camera } from '../components/Camera';
 import { SafeWrapper } from '../components/Elements';
 
@@ -18,20 +17,36 @@ export default function newEntry() {
     const [notes, setNotes] = useState(null);
     const [photoPath, setPhotoPath] = useState(null);
     const [photoUri, setPhotoUri] = useState(null);
-
     const [modalVisible, setModalVisible] = useState(true);
 
-    useEffect(() => {
-    }, []);
+    // Prepare stock images
+    const images = {
+        wineBottle: require('../assets/wine-bottle.png')
+    }
+
+    // Handle adding the new wine to the database
+    function handleAddPress() {
+        const wine = {
+            variety: variety,
+            origin: origin,
+            rating: rating,
+            brand: brand,
+            notes: notes,
+            vintage: vintage,
+            photoPath: photoPath,
+            photoUri: photoUri
+        }
+        addItem(wine); 
+        router.back()
+    }
 
     return (
         <SafeWrapper>
             <ScrollView style={styles.container}>
                 <Modal
-                    style={styles.modal}
                     visible={modalVisible}
                     transparent={false}
-                    animationType='slide'
+                    animationType='fade'
                 >
                     <View style={styles.modalView}>
                         <Camera photoPath={photoPath} setPhotoPath={setPhotoPath} setPhotoUri={setPhotoUri} setModalVisible={setModalVisible} />
@@ -40,11 +55,8 @@ export default function newEntry() {
                 <Text style={styles.text}></Text>
                 <View style={styles.textInputContainer}>
                     <Text style={styles.textInputTitle}>Photo</Text>
-                    {photoUri ? (<TouchableOpacity onPress={() => setModalVisible(true)}><Image source={{ uri: photoPath }} style={styles.image} resizeMode='cover'/></TouchableOpacity>) : (<Text style={styles.textInput}>no photo taken yet</Text>)}
+                    <TouchableOpacity onPress={() => setModalVisible(true)}><Image source={photoPath ? { uri: photoPath } : images.wineBottle} style={styles.image} resizeMode='cover'/></TouchableOpacity>
                 </View>
-                {/* <View style={styles.textInputContainer}>
-                <Text style={styles.text}>{photoUri ? `${photoUri}` : `no photo taken`}</Text>
-            </View> */}
                 <View style={styles.textInputContainer}>
                     <Text style={styles.textInputTitle}>Variety</Text>
                     <TextInput style={styles.textInput} value={variety} onChangeText={setVariety}></TextInput>
@@ -69,7 +81,7 @@ export default function newEntry() {
                     <Text style={styles.textInputTitle}>Notes</Text>
                     <TextInput style={styles.textInput} value={notes} onChangeText={setNotes}></TextInput>
                 </View>
-                <TouchableOpacity onPress={() => { addItem(variety, origin, rating, brand, notes, vintage, photoPath, photoUri); router.back() }} style={styles.addButton}>
+                <TouchableOpacity onPress={handleAddPress} style={styles.addButton}>
                     <Text style={styles.addButtonText}>+</Text>
                 </TouchableOpacity>
             </ScrollView>
@@ -89,11 +101,6 @@ const styles = StyleSheet.create({
     topBar: {
         backgroundColor: 'white',
         height: '3%',
-    },
-    modalText: {
-        color: colors.text,
-        fontSize: 30,
-        textAlign: 'center',
     },
     listContaier: {
         flex: 1,

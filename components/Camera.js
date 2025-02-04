@@ -1,13 +1,15 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef, useEffect } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Image, Modal, ScrollView, FlatList } from 'react-native';
 import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 // Custom imports
 import { photosDir } from './Database';
 import { SafeWrapper } from '../components/Elements';
+import { colors } from '../assets/theme';
 
 // Accesses device's camera to take a picture
 export function Camera(props) {
@@ -16,6 +18,7 @@ export function Camera(props) {
   const [cameraWidth, setCameraWidth] = useState(0);
   const [cameraHeight, setCameraHeight] = useState(0);
   const [deadAreaHeight, setDeadAreaHeight] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const cameraRef = useRef(null);
 
@@ -77,9 +80,16 @@ export function Camera(props) {
   return (
     <SafeWrapper>
       <View style={styles.container}>
+        <Modal
+          visible={modalVisible}
+          transparent={false}
+          animationType='slide'
+        >
+          <Gallery setModalVisible={setModalVisible} />
+        </Modal>
         <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
           <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
-            {props.photoPath ? <Image source={{ uri: props.photoPath }} resizeMode='cover' style={[styles.image, { width: 0.9*deadAreaHeight, height: 0.9*deadAreaHeight, marginLeft: 0.05*deadAreaHeight, marginTop: 0.05*deadAreaHeight }]} /> : <Text style={styles.caption}>Capture a picture of the wine label!</Text>}
+            {props.photoPath ? <Image source={{ uri: props.photoPath }} resizeMode='cover' style={[styles.image, { width: 0.9 * deadAreaHeight, height: 0.9 * deadAreaHeight, marginLeft: 0.05 * deadAreaHeight, marginTop: 0.05 * deadAreaHeight }]} /> : <Text style={styles.caption}>Capture a picture of the wine label!</Text>}
           </View>
           <View style={[styles.overlay, styles.bottomOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} />
           <View style={styles.exitButtonContainer}>
@@ -88,11 +98,68 @@ export function Camera(props) {
           <View style={styles.takePictureButtonContainer}>
             <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
           </View>
-          <TouchableOpacity style={styles.flipButton} onPress={flipCamera}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.flipButton} onPress={() => setFacing(current => (current === 'back' ? 'front' : 'back'))}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.galleryButton} onPress={() => setModalVisible(true)}><Text style={styles.flipButtonText}>gallery</Text></TouchableOpacity>
         </CameraView>
       </View>
     </SafeWrapper>
   );
+}
+
+/* Modal content for device gallery
+* Code from https://docs.expo.dev/versions/latest/sdk/media-library/
+*/
+function Gallery(props) {
+  const [photos, setPhotos] = useState([]);
+  const [permission, setPermission] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      setPermission(status === 'granted');
+      if (status === 'granted') {
+        fetchPhotos();
+      }
+    })();
+  }, []);
+
+  async function fetchPhotos() {
+    const album = await MediaLibrary.getAlbumAsync('Camera');
+    const assets = await MediaLibrary.getAssetsAsync({
+      first: 10,
+      mediaType: 'photo',
+      album: album?.id,
+    }); 
+
+    const updatedPhotos = await Promise.all(
+      assets.assets.map(async (asset) => {
+        const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
+        return { ...asset, uri: assetInfo.localUri };
+      })
+    );
+
+    setPhotos(updatedPhotos);
+  }
+
+  if (permission === null) return <Text>Requesting permission...</Text>;
+  if (!permission) return <Text>Permission denied.</Text>;
+  return (
+    <SafeWrapper>
+      <View style={styles.modalView}>
+        <Text style={styles.modalText}>New modal for camera roll</Text>
+        <Button onPress={() => props.setModalVisible(false)} title="exit" />
+        <FlatList
+          data={photos}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item.uri }} style={{ width: 100, height: 100, margin: 5 }} />
+          )}
+        />
+        <Button onPress={fetchPhotos} title="Load More" />
+      </View>
+    </SafeWrapper>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -197,6 +264,23 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderWidth: 2,
     borderRadius: 5,
-  }
+  },
+  modalView: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  modalText: {
+    color: colors.text,
+    fontSize: 30,
+    textAlign: 'center',
+  },
+  galleryButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    alignSelf: 'center',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
 
 });

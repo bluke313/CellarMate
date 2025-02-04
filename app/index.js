@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { router, Link, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 
 import { WineItem } from "../components/WineItem";
@@ -27,33 +27,13 @@ const logPhotos = async () => {
     }
 };
 
-// Debug function to delete all photos from persistent storage
-const deletePhotos = async () => {
-    try {
-        const dirInfo = await FileSystem.getInfoAsync(photosDir)
-        if (!dirInfo.exists) {
-            console.log('Photos folder does not exist.');
-            return;
-        }
-        const files = await FileSystem.readDirectoryAsync(photosDir);
-        for (const file of files) {
-            const filePath = `${photosDir}/${file}`;
-            await FileSystem.deleteAsync(filePath);
-        }
-        console.log('Deleted all files');
-    } catch (error) {
-        console.error('Error deleting photos:', error);
-    }
-};
-
 // Main home page
 export default function home() {
 
     const [wineList, setWineList] = useState([]);
     const [reload, setReload] = useState(0);
 
-    const [sortedList, setSortedList] = useState([]);
-    const [sorterAtrribute, setSorterAttribute] = useState('variety');
+    const [sorterAtrribute, setSorterAttribute] = useState('id');
     const [sorterOrder, setSorterOrder] = useState('desc');
 
     useEffect(() => {
@@ -61,15 +41,9 @@ export default function home() {
         dbFunctions.collectTrash();
     }, []);
 
-    useEffect(() => {
-        sort(wineList, setSortedList, sorterAtrribute, sorterOrder);
-    }, [sorterAtrribute, sorterOrder, wineList])
-
-    useFocusEffect( 
-        useCallback(() => {
-            dbFunctions.getItems(setWineList);
-        }, [])
-    );
+    useFocusEffect(() => {
+        dbFunctions.getItems(setWineList);
+    });
 
     return (
         <SafeWrapper>
@@ -82,13 +56,12 @@ export default function home() {
                     {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
                 </View>
                 <ScrollView style={styles.listContaier}>
-                    
                     <TouchableOpacity onPress={() => setSorterAttribute('variety')}><Text style={styles.text}>variety</Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSorterAttribute('origin')}><Text style={styles.text}>origin</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setSorterAttribute('id')}><Text style={styles.text}>id</Text></TouchableOpacity>
                     <TouchableOpacity onPress={() => setSorterAttribute('rating')}><Text style={styles.text}>rating</Text></TouchableOpacity>
                     <TouchableOpacity onPress={() => setSorterAttribute('vintage')}><Text style={styles.text}>vintage</Text></TouchableOpacity>
-                    {/* <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') {setSorterOrder('asc')} else {setSorterOrder('desc')} }}><Text style={styles.text}>flip order: {sorterOrder}</Text></TouchableOpacity> */}
-                    {sortedList.map((item, index) => (
+                    <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') { setSorterOrder('asc') } else { setSorterOrder('desc') } }}><Text style={styles.text}>flip order: {sorterOrder}</Text></TouchableOpacity>
+                    {sort(wineList, sorterAtrribute, sorterOrder).map((item, index) => (
                         <WineItem
                             key={index}
                             data={item}

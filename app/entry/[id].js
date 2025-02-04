@@ -3,12 +3,17 @@ import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, Alert } fr
 import { useLocalSearchParams, router } from 'expo-router';
 
 import { colors } from "../../assets/theme";
-import { getItemFromId, deleteItem, collectTrash, photosDir } from '../../components/Database';
+import { getItemFromId, deleteItem, photosDir } from '../../components/Database';
 import { SafeWrapper } from '../../components/Elements';
 
 export default function WinePage() {
     const { id } = useLocalSearchParams();
     const [data, setData] = useState(null);
+
+    // Prepare stock images
+    const images = {
+        wineBottle: require('../../assets/wine-bottle.png')
+    }
 
     useEffect(() => {
         getItemFromId(id, setData);
@@ -43,7 +48,7 @@ export default function WinePage() {
                             This is the Entry Page {id} for {data ? data.variety : "idk bruh"}
                         </Text>
                         <View style={styles.imageContainer}>
-                            <Image source={{ uri: `${photosDir}/${data.photoUri}` }} style={styles.image} resizeMode='cover' />
+                            <Image source={data.photoUri != 'null' ? { uri: `${photosDir}/${data.photoUri}`} : images.wineBottle} style={styles.image} resizeMode='cover' />
                             {/* <Text style={styles.text}>{data.photoUri}</Text> */}
                         </View>
                         <View style={styles.attributeContainer}>
@@ -69,6 +74,10 @@ export default function WinePage() {
                         <View style={styles.attributeContainer}>
                             <Text style={styles.attributeLeft}>Notes:</Text>
                             <Text style={styles.attributeLeft}>{data.notes}</Text>
+                        </View>
+                        <View style={styles.attributeContainer}>
+                            <Text style={styles.attributeLeft}>Date Created:</Text>
+                            <Text style={styles.attributeLeft}>{data.date_created}</Text>
                         </View>
                         <TouchableOpacity onPress={handleDeleteButtonPress} style={styles.addButton}>
                             <Text style={styles.addButtonText}>x</Text>

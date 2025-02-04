@@ -10,7 +10,16 @@ export const photosDir = `${FileSystem.documentDirectory}photos`;
 export const initDatabase = async () => {
     try {
         await (await db).execAsync(`
-            CREATE TABLE IF NOT EXISTS wines (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, variety TEXT, origin TEXT, rating INTEGER, brand TEXT, notes TEXT, vintage INTEGER, photoUri TEXT);
+            CREATE TABLE IF NOT EXISTS wines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+            variety TEXT, 
+            origin TEXT, 
+            rating INTEGER, 
+            brand TEXT, 
+            notes TEXT, 
+            vintage INTEGER, 
+            photoUri TEXT,
+            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             `);
     }
     catch (error) {
@@ -19,14 +28,27 @@ export const initDatabase = async () => {
 };
 
 // Add a wine to the database. Moves the photo from temporary storage to persistent storage
-export const addItem = async (variety, origin, rating, brand, notes, vintage, photoPath, photoUri) => {
+export const addItem = async (wine) => {
     try {
-        await (await db).runAsync(`INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) VALUES ('${variety}', '${origin}', ${rating}, '${brand}', '${notes}', ${vintage}, '${photoUri}');`);
-        await FileSystem.moveAsync({
-            from: photoPath,
-            to: `${photosDir}/${photoUri}`,
-        });
-        console.log('Added Item: ', variety);
+        await (await db).runAsync(`INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) 
+            VALUES (
+            ${wine.variety ? `'${wine.variety}'` : `'Unknown'`}, 
+            ${wine.origin ? `'${wine.origin}'` : `'Unknown'`}, 
+            ${wine.rating ? wine.rating : 0}, 
+            ${wine.brand ? `'${wine.brand}'` : `'Unknown'`}, 
+            ${wine.notes ? `'${wine.notes}'` : `''`}, 
+            ${wine.vintage ? wine.vintage : 0}, 
+            '${wine.photoUri}');`
+        );
+
+        if (wine.photoPath != null) {
+            await FileSystem.moveAsync({
+                from: wine.photoPath,
+                to: `${photosDir}/${wine.photoUri}`,
+            });
+        }
+
+        console.log('Added Item: ', wine.variety);
     }
     catch (error) {
         console.log("Error adding item: ", error);
@@ -38,7 +60,11 @@ export const deleteItem = async (id) => {
     try {
         const item = await (await db).getFirstAsync(`SELECT photoUri FROM wines WHERE id = ${id}`);
         await (await db).runAsync(`DELETE FROM wines WHERE id = ${id}`);
-        deletePhoto(item.photoUri);
+
+        if (item.photoUri != 'null') {
+            deletePhoto(item.photoUri);
+        }
+
         console.log('Removed item:', id);
     }
     catch (error) {

@@ -3,47 +3,54 @@ import { View, Text, StyleSheet, Platform, TouchableOpacity, Image } from "react
 import { router } from "expo-router";
 import Svg, { Rect } from "react-native-svg";
 
+// Custom imports
 import { colors } from "../assets/theme";
 import { photosDir } from '../components/Database';
 
-const convertRating = (rating) => {
-    var retval = "";
-    for (let i = 1; i >= 0; i--) {
-        if (rating <= 0) {
-            retval += "☆";
-        }
-        else {
-            retval += "★";
-        }
-        rating--;
-    }
-    return retval;
-};
-
-const makeFit = (text) => {
-    var retval = "";
-    for (let i = 0; i < 10; i++) {
-        if (text[i] != null) {
-            retval += text[i];
-        }
-    }
-    if (text.length == 11) {
-        retval += text[10];
-    }
-    else if (text.length >= 11) {
-        retval += "…";
-    }
-    return retval;
-};
-
 export function WineItem(props) {
-    const [modalVisible, setModalVisible] = useState(false);
+
+    // Prepare stock images
+    const images = {
+        wineBottle: require('../assets/wine-bottle.png')
+    }
+
+    // Convert the integer rating [0-2] into a star visual
+    const convertRating = (rating) => {
+        var retval = "";
+        for (let i = 1; i >= 0; i--) {
+            if (rating <= 0) {
+                retval += "☆";
+            }
+            else {
+                retval += "★";
+            }
+            rating--;
+        }
+        return retval;
+    };
+    
+    // Convert input text into formatted text that will fit the area on the screen
+    const makeFit = (text) => {
+        var retval = "";
+        for (let i = 0; i < 10; i++) {
+            if (text[i] != null) {
+                retval += text[i];
+            }
+        }
+        if (text.length == 11) {
+            retval += text[10];
+        }
+        else if (text.length >= 11) {
+            retval += "…";
+        }
+        return retval;
+    };
 
     return (
         <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
             <View style={{ flexDirection: "row" }}>
                 <View style={styles.imageContainer}>
-                    <Image source={{ uri: `${photosDir}/${props.data.photoUri}` }} style={styles.image} resizeMode='fit'/>
+                    <Image source={props.data.photoUri != 'null' ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit'/>
                 </View>
                 <View style={styles.leftCaptions}>
                     <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
