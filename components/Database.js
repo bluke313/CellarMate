@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+import { v4 as uuidv4 } from 'uuid';
 
 const db = SQLite.openDatabaseAsync('CellarMateDatabase');
 
@@ -29,6 +30,9 @@ export const initDatabase = async () => {
 
 // Add a wine to the database. Moves the photo from temporary storage to persistent storage
 export const addItem = async (wine) => {
+
+    const fileName = `${uuidv4()}.jpg`;
+
     try {
         await (await db).runAsync(`INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) 
             VALUES (
@@ -38,13 +42,13 @@ export const addItem = async (wine) => {
             ${wine.brand ? `'${wine.brand}'` : `'Unknown'`}, 
             ${wine.notes ? `'${wine.notes}'` : `''`}, 
             ${wine.vintage ? wine.vintage : 0}, 
-            '${wine.photoUri}');`
+            '${fileName}');`
         );
-
+        
         if (wine.photoPath != null) {
-            await FileSystem.moveAsync({
+            await FileSystem.copyAsync({
                 from: wine.photoPath,
-                to: `${photosDir}/${wine.photoUri}`,
+                to: `${photosDir}/${fileName}`,
             });
         }
 

@@ -4,7 +4,6 @@ import { Button, StyleSheet, Text, TouchableOpacity, View, Image, Modal, ScrollV
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
 
 // Custom imports
 import { photosDir } from './Database';
@@ -55,18 +54,11 @@ export function Camera(props) {
 
       const photo = await cameraRef.current.takePictureAsync();
 
-      const fileName = `${uuidv4()}.jpg`;
-
       const dirInfo = await FileSystem.getInfoAsync(photosDir);
       if (!dirInfo.exists) {
         await FileSystem.makeDirectoryAsync(photosDir, { intermediates: true });
       }
 
-      if (props.photoPath) {
-        await FileSystem.deleteAsync(props.photoPath);
-      }
-
-      props.setPhotoUri(fileName);
       props.setPhotoPath(photo.uri);
       props.setModalVisible(false);
     }
@@ -85,7 +77,7 @@ export function Camera(props) {
           transparent={false}
           animationType='slide'
         >
-          <Gallery setModalVisible={setModalVisible} />
+          <Gallery setModalVisible={setModalVisible} setPhotoPath={props.setPhotoPath} />
         </Modal>
         <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
           <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
@@ -106,9 +98,7 @@ export function Camera(props) {
   );
 }
 
-/* Modal content for device gallery
-* Code from https://docs.expo.dev/versions/latest/sdk/media-library/
-*/
+// Modal content for device gallery
 function Gallery(props) {
   const [photos, setPhotos] = useState([]);
   const [permission, setPermission] = useState(null);
@@ -129,7 +119,7 @@ function Gallery(props) {
       first: 10,
       mediaType: 'photo',
       album: album?.id,
-    }); 
+    });
 
     const updatedPhotos = await Promise.all(
       assets.assets.map(async (asset) => {
@@ -153,7 +143,9 @@ function Gallery(props) {
           keyExtractor={(item) => item.id}
           numColumns={3}
           renderItem={({ item }) => (
-            <Image source={{ uri: item.uri }} style={{ width: 100, height: 100, margin: 5 }} />
+            <TouchableOpacity style={styles.galleryImage} onPress={() => { props.setPhotoPath(item.uri); props.setModalVisible(false); }}>
+              <Image source={{ uri: item.uri }} style={{ width: 100, height: 100, margin: 5 }} />
+            </TouchableOpacity>
           )}
         />
         <Button onPress={fetchPhotos} title="Load More" />

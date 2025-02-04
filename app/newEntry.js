@@ -16,7 +16,6 @@ export default function newEntry() {
     const [origin, setOrigin] = useState(null);
     const [notes, setNotes] = useState(null);
     const [photoPath, setPhotoPath] = useState(null);
-    const [photoUri, setPhotoUri] = useState(null);
     const [modalVisible, setModalVisible] = useState(true);
 
     // Prepare stock images
@@ -34,7 +33,6 @@ export default function newEntry() {
             notes: notes,
             vintage: vintage,
             photoPath: photoPath,
-            photoUri: photoUri
         }
         addItem(wine); 
         router.back()
@@ -49,7 +47,7 @@ export default function newEntry() {
                     animationType='fade'
                 >
                     <View style={styles.modalView}>
-                        <Camera photoPath={photoPath} setPhotoPath={setPhotoPath} setPhotoUri={setPhotoUri} setModalVisible={setModalVisible} />
+                        <Camera photoPath={photoPath} setPhotoPath={setPhotoPath} setModalVisible={setModalVisible} />
                     </View>
                 </Modal>
                 <Text style={styles.text}></Text>
