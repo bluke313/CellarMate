@@ -1,6 +1,6 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState, useRef, useEffect } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Image, Modal, ScrollView, FlatList } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View, Image, Modal, ActivityIndicator, FlatList } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import 'react-native-get-random-values';
@@ -12,12 +12,11 @@ import { colors } from '../assets/theme';
 
 // Accesses device's camera to take a picture
 export function Camera(props) {
-  const [facing, setFacing] = useState('front');
+  const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraWidth, setCameraWidth] = useState(0);
   const [cameraHeight, setCameraHeight] = useState(0);
   const [deadAreaHeight, setDeadAreaHeight] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false);
 
   const cameraRef = useRef(null);
 
@@ -64,21 +63,9 @@ export function Camera(props) {
     }
   }
 
-  // Switch between front and back-facing cameras
-  function flipCamera() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  }
-
   return (
     <SafeWrapper>
       <View style={styles.container}>
-        <Modal
-          visible={modalVisible}
-          transparent={false}
-          animationType='slide'
-        >
-          <Gallery setModalVisible={setModalVisible} setPhotoPath={props.setPhotoPath} />
-        </Modal>
         <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
           <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
             {props.photoPath ? <Image source={{ uri: props.photoPath }} resizeMode='cover' style={[styles.image, { width: 0.9 * deadAreaHeight, height: 0.9 * deadAreaHeight, marginLeft: 0.05 * deadAreaHeight, marginTop: 0.05 * deadAreaHeight }]} /> : <Text style={styles.caption}>Capture a picture of the wine label!</Text>}
@@ -91,7 +78,7 @@ export function Camera(props) {
             <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
           </View>
           <TouchableOpacity style={styles.flipButton} onPress={() => setFacing(current => (current === 'back' ? 'front' : 'back'))}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.galleryButton} onPress={() => setModalVisible(true)}><Text style={styles.flipButtonText}>gallery</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.galleryButton} onPress={props.changeModals}><Text style={styles.flipButtonText}>gallery</Text></TouchableOpacity>
         </CameraView>
       </View>
     </SafeWrapper>
@@ -99,56 +86,85 @@ export function Camera(props) {
 }
 
 // Modal content for device gallery
-function Gallery(props) {
+export function Gallery(props) {
   const [photos, setPhotos] = useState([]);
   const [permission, setPermission] = useState(null);
+  const [after, setAfter] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [screenWidth, setScreenWidth] = useState(0);
 
   useEffect(() => {
     (async () => {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       setPermission(status === 'granted');
+
       if (status === 'granted') {
         fetchPhotos();
       }
     })();
   }, []);
 
+  const handleLayout = (event) => {
+    setScreenWidth(event.nativeEvent.layout.width);
+  };
+
   async function fetchPhotos() {
+    if (loading || !hasNextPage) return;
+
+    setLoading(true);
+
     const album = await MediaLibrary.getAlbumAsync('Camera');
     const assets = await MediaLibrary.getAssetsAsync({
-      first: 10,
+      first: 15,
+      after: after,
       mediaType: 'photo',
       album: album?.id,
     });
 
-    const updatedPhotos = await Promise.all(
-      assets.assets.map(async (asset) => {
-        const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
-        return { ...asset, uri: assetInfo.localUri };
-      })
-    );
+    if (assets.assets.length > 0) {
+      const updatedPhotos = await Promise.all(
+        assets.assets.map(async (asset) => {
+          const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
+          return { ...asset, uri: assetInfo.localUri };
+        })
+      );
 
-    setPhotos(updatedPhotos);
+      setPhotos((prevPhotos) => [...prevPhotos, ...updatedPhotos]);
+      setAfter(assets.endCursor);
+      setHasNextPage(assets.hasNextPage);
+
+    }
+
+    setLoading(false);
+
   }
 
   if (permission === null) return <Text>Requesting permission...</Text>;
   if (!permission) return <Text>Permission denied.</Text>;
   return (
     <SafeWrapper>
-      <View style={styles.modalView}>
-        <Text style={styles.modalText}>New modal for camera roll</Text>
-        <Button onPress={() => props.setModalVisible(false)} title="exit" />
+      <View style={styles.modalView} onLayout={handleLayout}>
+        <TouchableOpacity onPress={() => props.setModalVisible(false)}  >
+          <Text style={[styles.exitButtonText, styles.exitButton, styles.exitButtonContainer]}>x</Text>
+        </TouchableOpacity>
         <FlatList
           data={photos}
           keyExtractor={(item) => item.id}
           numColumns={3}
+          contentContainerStyle={{
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.galleryImage} onPress={() => { props.setPhotoPath(item.uri); props.setModalVisible(false); }}>
-              <Image source={{ uri: item.uri }} style={{ width: 100, height: 100, margin: 5 }} />
+            <TouchableOpacity onPress={() => { props.setPhotoPath(item.uri); props.setModalVisible(false); }}>
+              <Image source={{ uri: item.uri }} style={[styles.galleryImage, { width: (screenWidth / 3) , height: (screenWidth / 3)  }]} />
             </TouchableOpacity>
           )}
+          onEndReached={fetchPhotos}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={loading ? <ActivityIndicator size="large" color="0000ff"/> : null}
         />
-        <Button onPress={fetchPhotos} title="Load More" />
       </View>
     </SafeWrapper>
   )
@@ -225,7 +241,7 @@ const styles = StyleSheet.create({
     // borderWidth: 2,
   },
   exitButtonText: {
-    color: 'black',
+    color: 'white',
     fontSize: 40,
     textAlign: 'center',
     textAlignVertical: 'center',
@@ -234,6 +250,7 @@ const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
     backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 0,
   },
   topOverlay: {
     top: 0,
@@ -273,6 +290,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: '50%',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  galleryImage: {
+    // borderStyle: 'solid',
+    // borderColor: colors.accent,
+    // borderWidth: 2,
+    margin: 1,
   },
 
 });

@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 // Custom imports
 import { colors } from "../assets/theme";
 import { addItem } from '../components/Database';
-import { Camera } from '../components/Camera';
+import { Camera, Gallery } from '../components/Camera';
 import { SafeWrapper } from '../components/Elements';
 
 export default function newEntry() {
@@ -16,7 +16,8 @@ export default function newEntry() {
     const [origin, setOrigin] = useState(null);
     const [notes, setNotes] = useState(null);
     const [photoPath, setPhotoPath] = useState(null);
-    const [modalVisible, setModalVisible] = useState(true);
+    const [cameraModalVisible, setCameraModalVisible] = useState(true);
+    const [galleryModalVisible, setGalleryModalVisible] = useState(false);
 
     // Prepare stock images
     const images = {
@@ -34,7 +35,7 @@ export default function newEntry() {
             vintage: vintage,
             photoPath: photoPath,
         }
-        addItem(wine); 
+        addItem(wine);
         router.back()
     }
 
@@ -42,18 +43,33 @@ export default function newEntry() {
         <SafeWrapper>
             <ScrollView style={styles.container}>
                 <Modal
-                    visible={modalVisible}
+                    visible={cameraModalVisible}
                     transparent={false}
                     animationType='fade'
                 >
                     <View style={styles.modalView}>
-                        <Camera photoPath={photoPath} setPhotoPath={setPhotoPath} setModalVisible={setModalVisible} />
+                        <Camera
+                            photoPath={photoPath}
+                            setPhotoPath={setPhotoPath}
+                            setModalVisible={setCameraModalVisible}
+                            changeModals={() => { 
+                                setCameraModalVisible(false); 
+                                setGalleryModalVisible(true); 
+                            }}
+                        />
                     </View>
+                </Modal>
+                <Modal
+                    visible={galleryModalVisible}
+                    transparent={false}
+                    animationType='slide'
+                >
+                    <Gallery setModalVisible={setGalleryModalVisible} setPhotoPath={setPhotoPath} />
                 </Modal>
                 <Text style={styles.text}></Text>
                 <View style={styles.textInputContainer}>
                     <Text style={styles.textInputTitle}>Photo</Text>
-                    <TouchableOpacity onPress={() => setModalVisible(true)}><Image source={photoPath ? { uri: photoPath } : images.wineBottle} style={styles.image} resizeMode='cover'/></TouchableOpacity>
+                    <TouchableOpacity onPress={() => setCameraModalVisible(true)}><Image source={photoPath ? { uri: photoPath } : images.wineBottle} style={styles.image} resizeMode='cover' /></TouchableOpacity>
                 </View>
                 <View style={styles.textInputContainer}>
                     <Text style={styles.textInputTitle}>Variety</Text>
