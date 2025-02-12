@@ -1,9 +1,8 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useRef, useEffect } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image, Modal, ActivityIndicator, FlatList } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-import 'react-native-get-random-values';
 
 // Custom imports
 import { photosDir } from './Database';
@@ -158,12 +157,12 @@ export function Gallery(props) {
           }}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => { props.setPhotoPath(item.uri); props.setModalVisible(false); }}>
-              <Image source={{ uri: item.uri }} style={[styles.galleryImage, { width: (screenWidth / 3) , height: (screenWidth / 3)  }]} />
+              <Image source={{ uri: item.uri }} style={[styles.galleryImage, { width: (screenWidth / 3), height: (screenWidth / 3) }]} />
             </TouchableOpacity>
           )}
           onEndReached={fetchPhotos}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={loading ? <ActivityIndicator size="large" color="0000ff"/> : null}
+          ListFooterComponent={loading ? <ActivityIndicator size="large" color="0000ff" /> : null}
         />
       </View>
     </SafeWrapper>

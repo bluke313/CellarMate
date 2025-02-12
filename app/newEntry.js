@@ -35,8 +35,9 @@ export default function newEntry() {
             vintage: vintage,
             photoPath: photoPath,
         }
-        addItem(wine);
-        router.back()
+        addItem(wine).then(() => {
+            router.back()
+        });
     }
 
     return (

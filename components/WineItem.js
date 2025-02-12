@@ -11,7 +11,8 @@ export function WineItem(props) {
 
     // Prepare stock images
     const images = {
-        wineBottle: require('../assets/wine-bottle.png')
+        wineBottle: require('../assets/wine-bottle.png'),
+        loading: require('../assets/loading.gif')
     }
 
     // Convert the integer rating [0-2] into a star visual
@@ -28,7 +29,7 @@ export function WineItem(props) {
         }
         return retval;
     };
-    
+
     // Convert input text into formatted text that will fit the area on the screen
     const makeFit = (text) => {
         var retval = "";
@@ -46,11 +47,41 @@ export function WineItem(props) {
         return retval;
     };
 
+    if (props.loading) {
+        return (
+            <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={styles.imageContainer}>
+                        <Image source={images.loading} style={styles.image} resizeMode='fit' />
+                    </View>
+                    <View style={styles.leftCaptions}>
+                        <Text style={[styles.text, { color: colors.placeholderText }]}>loading...</Text>
+                        <Text style={styles.text}></Text>
+                        <Text style={styles.text}></Text>
+                    </View>
+                    <Svg height="75" width="2">
+                        <Rect
+                            x="0"
+                            y="7.5"
+                            width="2"
+                            height="60"
+                            fill={colors.primary}
+                        />
+                    </Svg>
+                    <View style={styles.rightCaptions}>
+                        <Text style={styles.text}></Text>
+                        <Text style={styles.text}></Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    }
+
     return (
         <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
             <View style={{ flexDirection: "row" }}>
                 <View style={styles.imageContainer}>
-                    <Image source={props.data.photoUri != 'null' ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit'/>
+                    <Image source={props.data.photoUri != 'null' ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit' />
                 </View>
                 <View style={styles.leftCaptions}>
                     <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
@@ -58,7 +89,7 @@ export function WineItem(props) {
                     <Text style={styles.text}>{convertRating(props.data.rating)}</Text>
                 </View>
                 <Svg height="75" width="2">
-                    <Rect 
+                    <Rect
                         x="0"
                         y="7.5"
                         width="2"
@@ -94,18 +125,18 @@ const styles = StyleSheet.create({
         }),
     },
     leftCaptions: {
-        paddingHorizontal: 10, 
-        paddingVertical: 5, 
+        paddingHorizontal: 10,
+        paddingVertical: 5,
         justifyContent: 'space-between',
         width: 115,
         height: 75,
-    },  
+    },
     rightCaptions: {
-        paddingHorizontal: 10, 
-        paddingVertical: 5, 
+        paddingHorizontal: 10,
+        paddingVertical: 5,
         width: 125,
         height: 75,
-    },  
+    },
     image: {
         height: 75,
         width: 75,

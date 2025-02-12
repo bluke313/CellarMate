@@ -31,8 +31,9 @@ export default function WinePage() {
                 {
                     text: 'Delete',
                     onPress: () => {
-                        deleteItem(id);
-                        router.back()
+                        deleteItem(id).then(() => {
+                            router.back()
+                        });
                     },
                 },
             ]

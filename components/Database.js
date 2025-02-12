@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import { v4 as uuidv4 } from 'uuid';
+import 'react-native-get-random-values'
 
 const db = SQLite.openDatabaseAsync('CellarMateDatabase');
 
@@ -14,7 +15,7 @@ export const initDatabase = async () => {
             CREATE TABLE IF NOT EXISTS wines (
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
             variety TEXT, 
-            origin TEXT, 
+            origin TEXT,
             rating INTEGER, 
             brand TEXT, 
             notes TEXT, 
@@ -22,6 +23,10 @@ export const initDatabase = async () => {
             photoUri TEXT,
             date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             `);
+            // DROP TABLE IF EXISTS wines;
+            // INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) 
+            // VALUES ('a', 'a', 1, 'a', 'a', '1', ''), ('b', 'b', 2, 'b', 'b', '2', ''), ('c', 'c', 0, 'c', 'c', '0', '');
+
     }
     catch (error) {
         console.log("Error initializing database: ", error);
@@ -30,7 +35,6 @@ export const initDatabase = async () => {
 
 // Add a wine to the database. Moves the photo from temporary storage to persistent storage
 export const addItem = async (wine) => {
-
     const fileName = `${uuidv4()}.jpg`;
 
     try {
@@ -79,7 +83,9 @@ export const deleteItem = async (id) => {
 // Uses setWineList to return all wines in the database and their attributes
 export const getItems = async (setWineList) => {
     try {
-        const result = await (await db).getAllAsync('SELECT * FROM wines;');
+        const result = await (await db).getAllAsync(`
+            SELECT * FROM wines
+            `);
         setWineList(result);
     }
     catch (error) {

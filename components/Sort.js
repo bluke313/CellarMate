@@ -3,20 +3,21 @@ export function sort(list, attribute, order = 'desc') {
 
     var secondAttribute = 'rating';
     if (secondAttribute === attribute) {
-        secondAttribute = 'id';
+        secondAttribute = 'date_created';
     }
+    var attributeIsNumber = attribute === 'rating' || attribute == 'date_created';
     
     const sortedList = [...list].sort((a, b) => {
         if (a[attribute] < b[attribute]) {
             // reverse sorting direction for number attributes
-            if ((typeof list[0][attribute] === 'number') !== (order === 'asc')) {
+            if (attributeIsNumber !== (order === 'asc')) {
                 return 1;
             }
             return -1;
         }
         else if (a[attribute] > b[attribute]) {
             // reverse sorting direction for number attributes
-            if ((typeof list[0][attribute] === 'number') !== (order === 'asc')) {
+            if (attributeIsNumber !== (order === 'asc')) {
                 return -1;
             }
             return 1;
@@ -24,14 +25,14 @@ export function sort(list, attribute, order = 'desc') {
         else {
             if (a[secondAttribute] < b[secondAttribute]) {
                 // reverse sorting direction for number attributes
-                if (typeof list[0][secondAttribute] === 'number') {
+                if (attributeIsNumber) {
                     return 1;
                 }
                 return -1;
             }
             else if (a[secondAttribute] > b[secondAttribute]) {
                 // reverse sorting direction for number attributes
-                if (typeof list[0][secondAttribute] === 'number') {
+                if (attributeIsNumber) {
                     return -1;
                 }
                 return 1;
