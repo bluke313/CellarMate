@@ -9,6 +9,9 @@ import { photosDir } from '../components/Database';
 
 export function WineItem(props) {
 
+    const [imageView, setImageView] = useState(false);
+    const [fullView, setFullView] = useState(false);
+
     // Prepare stock images
     const images = {
         wineBottle: require('../assets/wine-bottle.png'),
@@ -49,7 +52,7 @@ export function WineItem(props) {
 
     if (props.loading) {
         return (
-            <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
+            <View style={styles.container}>
                 <View style={{ flexDirection: "row" }}>
                     <View style={styles.imageContainer}>
                         <Image source={images.loading} style={styles.image} resizeMode='fit' />
@@ -73,16 +76,17 @@ export function WineItem(props) {
                         <Text style={styles.text}></Text>
                     </View>
                 </View>
-            </TouchableOpacity>
+            </View>
         );
     }
 
     return (
-        <TouchableOpacity onPress={() => router.push(`/entry/${props.data.id}`)} style={styles.container}>
+
+        <View style={!imageView || fullView ? styles.container : [styles.container, { borderColor: colors.secondary }]}>
             <View style={{ flexDirection: "row" }}>
-                <View style={styles.imageContainer}>
+                <TouchableOpacity onPress={props.setOverlayImage} activeOpacity={0.4}>
                     <Image source={props.data.photoUri != 'null' ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit' />
-                </View>
+                </TouchableOpacity>
                 <View style={styles.leftCaptions}>
                     <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
                     <Text style={styles.text}>{makeFit(props.data.origin)}</Text>
@@ -102,7 +106,7 @@ export function WineItem(props) {
                     <Text style={styles.text}>{props.data.vintage}</Text>
                 </View>
             </View>
-        </TouchableOpacity>
+        </View>
     )
 };
 
@@ -140,9 +144,10 @@ const styles = StyleSheet.create({
     image: {
         height: 75,
         width: 75,
-        borderWidth: 3,
-        borderRadius: 10,
-        borderColor: colors.secondary,
+        borderTopLeftRadius: 15,
+        borderBottomLeftRadius: 15,
+        borderRightWidth: 4,
+        borderColor: colors.primary,
+    },
 
-    }
 });

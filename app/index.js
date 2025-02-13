@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList, Image } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 
 // Custom imports
 import { WineItem } from "../components/WineItem";
 import { colors } from "../assets/theme";
+import { photosDir } from '../components/Database';
 import * as dbFunctions from '../components/Database';
 import { sort } from '../components/Sort';
 import { SafeWrapper } from '../components/Elements';
-
-const photosDir = `${FileSystem.documentDirectory}photos`;
 
 // Debug function to print all photo names to console
 const logPhotos = async () => {
@@ -38,6 +37,8 @@ export default function home() {
     const [sorterOrder, setSorterOrder] = useState('desc');
     const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(false);
+    const [overlayImage, setOverlayImage] = useState(null);
+    const [overlayImageVisible, setOverlayImageVisible] = useState(false);
 
     const sortMenuOptions = [
         { key: 'recent', value: 'date_created' },
@@ -81,12 +82,21 @@ export default function home() {
     return (
         <SafeWrapper>
             <Modal
+                visible={overlayImageVisible}
+                transparent
+                animationType='fade'
+            >
+                <View style={styles.modalContainer} onTouchEnd={() => setOverlayImageVisible(false)}>
+                    <Image source={{ uri: `${photosDir}/${overlayImage}`}} resizeMode='fit' style={styles.overlayImage}/>
+                </View>
+            </Modal>
+            <Modal
                 visible={sortMenuVisible}
                 transparent
                 animationType='fade'
             >
                 <View
-                    style={styles.sortMenuContainer}
+                    style={styles.modalContainer}
                     onTouchEnd={(e) => {
                         if (e.target === e.currentTarget) {
                             setSortMenuVisible(false);
@@ -108,7 +118,7 @@ export default function home() {
             </Modal>
             <View style={styles.container}>
                 <View style={styles.menuBarContainer}>
-                    <Text style={styles.text}>Welcome home</Text>
+                    <Text style={styles.text}>CellarMate</Text>
                     {/* <Text onPress={() => setReload(reload + 1)} style={styles.text}>Reload</Text> */}
                     {/* <Text onPress={() => logPhotos()} style={styles.text}>Log Files</Text> */}
                     {/* <Text onPress={() => dbFunctions.collectTrash()} style={styles.text}>Collect Trash</Text> */}
@@ -137,6 +147,7 @@ export default function home() {
                                 <WineItem
                                     data={item}
                                     loading={loading}
+                                    setOverlayImage={() => {setOverlayImage(item.photoUri); setOverlayImageVisible(true)}}
                                 />
                             )}
                             style={{ marginBottom: 75 }}
@@ -196,7 +207,7 @@ const styles = StyleSheet.create({
         fontSize: 50,
         textAlign: 'center',
     },
-    sortMenuContainer: {
+    modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -244,5 +255,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 18,
         
+    },
+    overlayImage: {
+        height: '85%',
+        width: '85%',
+        borderRadius: 50,
+        borderWidth: 10,
+        borderColor: colors.secondary,
     }
 });
