@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Platform, TouchableOpacity, Image } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, StyleSheet, Platform, TouchableOpacity, Image, Button, Animated } from "react-native";
 import { router } from "expo-router";
 import Svg, { Rect } from "react-native-svg";
 
@@ -7,10 +7,29 @@ import Svg, { Rect } from "react-native-svg";
 import { colors } from "../assets/theme";
 import { photosDir } from '../components/Database';
 
+const HighlightedView = ({ isHighlighted, children }) => {
+    const borderColorAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.timing(borderColorAnim, {
+            toValue: isHighlighted ? 1 : 0,
+            duration : 400,
+            useNativeDriver: false,
+        }).start();
+    }, [isHighlighted]);
+
+    const borderColor = borderColorAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [colors.primary, colors.secondary],
+    });
+
+    return <Animated.View style={[styles.container, { borderColor }]}>{ children }</Animated.View>;
+
+}
+
 export function WineItem(props) {
 
     const [imageView, setImageView] = useState(false);
-    const [fullView, setFullView] = useState(false);
 
     // Prepare stock images
     const images = {
@@ -29,23 +48,6 @@ export function WineItem(props) {
                 retval += "★";
             }
             rating--;
-        }
-        return retval;
-    };
-
-    // Convert input text into formatted text that will fit the area on the screen
-    const makeFit = (text) => {
-        var retval = "";
-        for (let i = 0; i < 10; i++) {
-            if (text[i] != null) {
-                retval += text[i];
-            }
-        }
-        if (text.length == 11) {
-            retval += text[10];
-        }
-        else if (text.length >= 11) {
-            retval += "…";
         }
         return retval;
     };
@@ -82,32 +84,41 @@ export function WineItem(props) {
 
     return (
 
-        <View style={!imageView || fullView ? styles.container : [styles.container, { borderColor: colors.secondary }]}>
+        <HighlightedView isHighlighted={props.isHighlighted} >
             <View style={{ flexDirection: "row" }}>
-                <TouchableOpacity onPress={props.setOverlayImage} activeOpacity={0.4}>
-                    <Image source={props.data.photoUri != 'null' ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit' />
+                <TouchableOpacity onPress={() => { if (props.data.photoUri) props.setOverlayImage() }} activeOpacity={props.data.photoUri ? 0.4 : 1}>
+                    <Image source={props.data.photoUri ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit' />
                 </TouchableOpacity>
-                <View style={styles.leftCaptions}>
-                    <Text style={styles.text}>{makeFit(props.data.variety)}</Text>
-                    <Text style={styles.text}>{makeFit(props.data.origin)}</Text>
-                    <Text style={styles.text}>{convertRating(props.data.rating)}</Text>
-                </View>
-                <Svg height="75" width="2">
-                    <Rect
-                        x="0"
-                        y="7.5"
-                        width="2"
-                        height="60"
-                        fill={colors.primary}
-                    />
-                </Svg>
-                <View style={styles.rightCaptions}>
-                    <Text style={styles.text}>{makeFit(props.data.brand)}</Text>
-                    <Text style={styles.text}>{props.data.vintage}</Text>
+                <View style={{flex: 1, flexDirection: 'row'}}>
+                    <View style={styles.leftCaptions}>
+                        <Text style={styles.text} numberOfLines={1} ellipsizeMode='tail'>{props.data.variety}</Text>
+                        <Text style={styles.text} numberOfLines={1}>{props.data.origin}</Text>
+                        <Text style={styles.text} numberOfLines={1}>{convertRating(props.data.rating)}</Text>
+                    </View>
+                    <Svg height="75" width="2">
+                        <Rect
+                            x="0"
+                            y="7.5"
+                            width="2"
+                            height="60"
+                            fill={colors.primary}
+                        />
+                    </Svg>
+                    <View style={styles.rightCaptions}>
+                        <Text style={styles.text} numberOfLines={1}>{props.data.brand}</Text>
+                        <Text style={styles.text} numberOfLines={1}>{props.data.vintage}</Text>
+                    </View>
+                    <View style={{ }}>
+                        <Button title="DELETE" onPress={props.deleteItem} />
+                    </View>
                 </View>
             </View>
-        </View>
+        </HighlightedView>
     )
+};
+
+export function FocusedWineItem(props) {
+
 };
 
 const styles = StyleSheet.create({
@@ -132,13 +143,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
         justifyContent: 'space-between',
-        width: 115,
+        width: '35%',
         height: 75,
     },
     rightCaptions: {
         paddingHorizontal: 10,
         paddingVertical: 5,
-        width: 125,
+        width: '30%',
         height: 75,
     },
     image: {

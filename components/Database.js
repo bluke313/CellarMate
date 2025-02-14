@@ -35,7 +35,14 @@ export const initDatabase = async () => {
 
 // Add a wine to the database. Moves the photo from temporary storage to persistent storage
 export const addItem = async (wine) => {
-    const fileName = `${uuidv4()}.jpg`;
+    
+    var fileNameWithFormatting = null;
+    var fileName = null;
+    
+    if (wine.photoPath) {
+        fileName = `${uuidv4()}.jpg`;
+        fileNameWithFormatting = `'${fileName}'`;
+    }
 
     try {
         await (await db).runAsync(`INSERT INTO wines (variety, origin, rating, brand, notes, vintage, photoUri) 
@@ -46,7 +53,7 @@ export const addItem = async (wine) => {
             ${wine.brand ? `'${wine.brand}'` : `'Unknown'`}, 
             ${wine.notes ? `'${wine.notes}'` : `''`}, 
             ${wine.vintage ? wine.vintage : 0}, 
-            '${fileName}');`
+            ${fileNameWithFormatting});`
         );
         
         if (wine.photoPath != null) {
@@ -69,7 +76,7 @@ export const deleteItem = async (id) => {
         const item = await (await db).getFirstAsync(`SELECT photoUri FROM wines WHERE id = ${id}`);
         await (await db).runAsync(`DELETE FROM wines WHERE id = ${id}`);
 
-        if (item.photoUri != 'null') {
+        if (item.photoUri) {
             deletePhoto(item.photoUri);
         }
 

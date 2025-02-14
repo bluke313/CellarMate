@@ -49,7 +49,7 @@ export default function WinePage() {
                             This is the Entry Page {id} for {data ? data.variety : "idk bruh"}
                         </Text>
                         <View style={styles.imageContainer}>
-                            <Image source={data.photoUri != 'null' ? { uri: `${photosDir}/${data.photoUri}`} : images.wineBottle} style={styles.image} resizeMode='cover' />
+                            <Image source={data.photoUri ? { uri: `${photosDir}/${data.photoUri}`} : images.wineBottle} style={styles.image} resizeMode='cover' />
                             {/* <Text style={styles.text}>{data.photoUri}</Text> */}
                         </View>
                         <View style={styles.attributeContainer}>

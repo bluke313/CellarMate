@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList, Image } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList, Image, Alert } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 
@@ -39,6 +39,7 @@ export default function home() {
     const [loading, setLoading] = useState(false);
     const [overlayImage, setOverlayImage] = useState(null);
     const [overlayImageVisible, setOverlayImageVisible] = useState(false);
+    const [focusedItem, setFocusedItem] = useState(null);
 
     const sortMenuOptions = [
         { key: 'recent', value: 'date_created' },
@@ -76,8 +77,29 @@ export default function home() {
             return () => {
                 // console.log('Screen unfocused');
             }
-        }, [])
+        }, [reload])
     );
+
+    function handleDelete(id) {
+        Alert.alert(
+            "Confirm Delete",
+            "Are you sure you want to delete this item?",
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    onPress: () => {
+                        dbFunctions.deleteItem(id).then(() => {
+                            dbFunctions.getItems(setWineList);
+                        });
+                    },
+                },
+            ]
+        );
+    };
 
     return (
         <SafeWrapper>
@@ -87,7 +109,8 @@ export default function home() {
                 animationType='fade'
             >
                 <View style={styles.modalContainer} onTouchEnd={() => setOverlayImageVisible(false)}>
-                    <Image source={{ uri: `${photosDir}/${overlayImage}`}} resizeMode='fit' style={styles.overlayImage}/>
+                    <Image source={{ uri: `${photosDir}/${overlayImage}` }} resizeMode='fit' style={styles.overlayImage} />
+                    {/* <Text style={{ color: 'white', fontSize: 50 }}>{overlayImage}</Text> */}
                 </View>
             </Modal>
             <Modal
@@ -124,37 +147,40 @@ export default function home() {
                     {/* <Text onPress={() => dbFunctions.collectTrash()} style={styles.text}>Collect Trash</Text> */}
                     {/* <Text onPress={() => deletePhotos()} style={styles.text}>Delete Files</Text> */}
                 </View>
-                <View style={styles.listContaier}>
-                    <View style={{flexDirection: 'row', borderBottomColor: colors.primary, borderWidth: 1, paddingHorizontal: 4, paddingBottom: 10 }}>
-                        <View style={styles.searchBarContainer} >
-                            <TextInput style={styles.searchBar} value={searchValue} onChangeText={setSearchValue} placeholder='Search...' placeholderTextColor={colors.placeholderText} />
-                            <TouchableOpacity style={{alignItems: 'center'}} onPress={() => setSearchValue('')}><Text style={{color: colors.placeholderText, fontSize: 30, marginHorizontal: 10}}>x</Text></TouchableOpacity>
-                        </View>
-                        <View style={{ flexDirection: 'row', borderColor: colors.primary, borderRadius: 10, borderWidth: 2}}>
-                            <TouchableOpacity onPress={() => setSortMenuVisible(true)} style={{ alignSelf: 'center' }}>
-                                <Text style={styles.text}>{sortMenuIcons[sorterAttribute]}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') { setSorterOrder('asc') } else { setSorterOrder('desc') } }} style={{ alignSelf: 'center' }}>
-                                <Text style={styles.text}>{sorterOrder === 'desc' ? "▼" : "▲"}</Text>
-                            </TouchableOpacity>
-                        </View>
+                <View style={{ flexDirection: 'row', borderBottomColor: colors.primary, borderWidth: 1, paddingHorizontal: 4, paddingBottom: 10, marginTop: 25 }}>
+                    <View style={styles.searchBarContainer} >
+                        <TextInput style={styles.searchBar} value={searchValue} onChangeText={setSearchValue} placeholder='Search...' placeholderTextColor={colors.placeholderText} />
+                        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setSearchValue('')}><Text style={{ color: colors.placeholderText, fontSize: 30 }}>x</Text></TouchableOpacity>
                     </View>
-                    <View >
-                        <FlatList
-                            data={sort(filteredWineList, sorterAttribute, sorterOrder)}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <WineItem
-                                    data={item}
-                                    loading={loading}
-                                    setOverlayImage={() => {setOverlayImage(item.photoUri); setOverlayImageVisible(true)}}
-                                />
-                            )}
-                            style={{ marginBottom: 75 }}
-                        />
-                        {filteredWineList.length === 0 && wineList.length !== 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center'}}>No results</Text>}
-                        {wineList.length === 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center', marginTop: 150 }}>Tap + to add your first wine!</Text>}
+                    <View style={{ flexDirection: 'row', borderColor: colors.primary, borderRadius: 10, borderWidth: 2 }}>
+                        <TouchableOpacity onPress={() => setSortMenuVisible(true)} style={{ alignSelf: 'center' }}>
+                            <Text style={styles.text}>{sortMenuIcons[sorterAttribute]}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') { setSorterOrder('asc') } else { setSorterOrder('desc') } }} style={{ alignSelf: 'center' }}>
+                            <Text style={styles.text}>{sorterOrder === 'desc' ? "▼" : "▲"}</Text>
+                        </TouchableOpacity>
                     </View>
+                </View>
+                <View >
+                    <FlatList
+                        data={sort(filteredWineList, sorterAttribute, sorterOrder)}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <WineItem
+                                data={item}
+                                loading={loading}
+                                setOverlayImage={() => {
+                                    setOverlayImage(item.photoUri);
+                                    setOverlayImageVisible(true);
+                                }}
+                                deleteItem={() => handleDelete(item.id)}
+                                isHighlighted={overlayImage === item.photoUri && overlayImageVisible || focusedItem === item.id}
+                            />
+                        )}
+                        style={{ marginBottom: 75 }}
+                    />
+                    {filteredWineList.length === 0 && wineList.length !== 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center' }}>No results</Text>}
+                    {wineList.length === 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center', marginTop: 150 }}>Tap + to add your first wine!</Text>}
                 </View>
                 <TouchableOpacity onPress={() => router.push("/newEntry")} style={styles.addButton}>
                     <Text style={styles.addButtonText}>+</Text>
@@ -172,11 +198,6 @@ const styles = StyleSheet.create({
     text: {
         color: colors.text,
         fontSize: 30,
-    },
-    listContaier: {
-        flex: 1,
-        marginTop: 25,
-
     },
     menuBarContainer: {
         borderColor: colors.primary,
@@ -248,13 +269,14 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginRight: 4,
+        paddingHorizontal: 10,
+        gap: 10,
     },
     searchBar: {
         flex: 1,
         color: colors.text,
-        marginLeft: 10,
         fontSize: 18,
-        
+        height: 42,
     },
     overlayImage: {
         height: '85%',
