@@ -13,7 +13,7 @@ const HighlightedView = ({ isHighlighted, children }) => {
     useEffect(() => {
         Animated.timing(borderColorAnim, {
             toValue: isHighlighted ? 1 : 0,
-            duration : 400,
+            duration: 350,
             useNativeDriver: false,
         }).start();
     }, [isHighlighted]);
@@ -23,7 +23,7 @@ const HighlightedView = ({ isHighlighted, children }) => {
         outputRange: [colors.primary, colors.secondary],
     });
 
-    return <Animated.View style={[styles.container, { borderColor }]}>{ children }</Animated.View>;
+    return <Animated.View style={[styles.container, { borderColor }]}>{children}</Animated.View>;
 
 }
 
@@ -86,10 +86,15 @@ export function WineItem(props) {
 
         <HighlightedView isHighlighted={props.isHighlighted} >
             <View style={{ flexDirection: "row" }}>
-                <TouchableOpacity onPress={() => { if (props.data.photoUri) props.setOverlayImage() }} activeOpacity={props.data.photoUri ? 0.4 : 1}>
-                    <Image source={props.data.photoUri ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} style={styles.image} resizeMode='fit' />
-                </TouchableOpacity>
-                <View style={{flex: 1, flexDirection: 'row'}}>
+                <View style={{height: 75, width: 75, borderTopLeftRadius: 15, borderBottomLeftRadius: 15, borderRightWidth: 4, borderColor: colors.primary}}>
+                    <TouchableOpacity onPress={() => { if (props.data.photoUri) props.setOverlayImage() }} activeOpacity={props.data.photoUri ? 0.4 : 1}>
+                        <Image 
+                            source={props.data.photoUri ? { uri: `${photosDir}/${props.data.photoUri}` } : images.wineBottle} 
+                            style={{borderTopLeftRadius: 15, borderBottomLeftRadius: 15, height: '100%', width: '100%'}} resizeMode='fit' 
+                        />
+                    </TouchableOpacity>
+                </View>
+                <View style={{ flex: 1, flexDirection: 'row' }}>
                     <View style={styles.leftCaptions}>
                         <Text style={styles.text} numberOfLines={1} ellipsizeMode='tail'>{props.data.variety}</Text>
                         <Text style={styles.text} numberOfLines={1}>{props.data.origin}</Text>
@@ -108,7 +113,7 @@ export function WineItem(props) {
                         <Text style={styles.text} numberOfLines={1}>{props.data.brand}</Text>
                         <Text style={styles.text} numberOfLines={1}>{props.data.vintage}</Text>
                     </View>
-                    <View style={{ }}>
+                    <View style={{}}>
                         <Button title="DELETE" onPress={props.deleteItem} />
                     </View>
                 </View>
@@ -151,14 +156,6 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         width: '30%',
         height: 75,
-    },
-    image: {
-        height: 75,
-        width: 75,
-        borderTopLeftRadius: 15,
-        borderBottomLeftRadius: 15,
-        borderRightWidth: 4,
-        borderColor: colors.primary,
     },
 
 });

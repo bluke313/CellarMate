@@ -16,6 +16,8 @@ export function Camera(props) {
   const [cameraWidth, setCameraWidth] = useState(0);
   const [cameraHeight, setCameraHeight] = useState(0);
   const [deadAreaHeight, setDeadAreaHeight] = useState(0);
+  const [isPhotoCaptured, setIsPhotoCaptured] = useState(false);
+  const [isOverlayImageVisible, setIsOverlayImageVisible] = useState(false);
 
   const cameraRef = useRef(null);
 
@@ -58,28 +60,59 @@ export function Camera(props) {
       }
 
       props.setPhotoPath(photo.uri);
-      props.setModalVisible(false);
+      setIsPhotoCaptured(true);
     }
   }
 
   return (
     <SafeWrapper>
-      <View style={styles.container}>
-        <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
-          <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
-            {props.photoPath ? <Image source={{ uri: props.photoPath }} resizeMode='cover' style={[styles.image, { width: 0.9 * deadAreaHeight, height: 0.9 * deadAreaHeight, marginLeft: 0.05 * deadAreaHeight, marginTop: 0.05 * deadAreaHeight }]} /> : <Text style={styles.caption}>Capture a picture of the wine label!</Text>}
+      <Modal
+        visible={isOverlayImageVisible}
+        transparent
+        animationType='fade'
+      >
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)',}} onTouchEnd={() => setIsOverlayImageVisible(false)}>
+          <Image source={{ uri: props.photoPath }} resizeMode='fit' style={{ height: '95%', width: '95%', borderRadius: 10, borderWidth: 4, borderColor: 'black', }} />
+        </View>
+      </Modal>
+      {isPhotoCaptured ?
+        <View style={[styles.container, { justifyContent: 'flex-start' }]}>
+          <Image
+            source={{ uri: props.photoPath }}
+            resizeMode='fit'
+            style={{ width: '85%', height: '85%', alignSelf: 'center', borderWidth: 5, borderColor: colors.secondary, borderRadius: 10, margin: 10 }}
+          />
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly', backgroundColor: colors.primary }}>
+            <TouchableOpacity onPress={() => { props.setPhotoPath(null); setIsPhotoCaptured(false) }} style={styles.capturedPhotoButton}><Text style={styles.capturedPhotoButtonText}>X</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => { props.setModalVisible(false) }} style={styles.capturedPhotoButton}><Text style={styles.capturedPhotoButtonText}>✓</Text></TouchableOpacity>
           </View>
-          <View style={[styles.overlay, styles.bottomOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} />
-          <View style={styles.exitButtonContainer}>
-            <TouchableOpacity style={styles.exitButton} onPress={() => props.setModalVisible(false)}><Text style={styles.exitButtonText}>x</Text></TouchableOpacity>
-          </View>
-          <View style={styles.takePictureButtonContainer}>
-            <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
-          </View>
-          <TouchableOpacity style={styles.flipButton} onPress={() => setFacing(current => (current === 'back' ? 'front' : 'back'))}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.galleryButton} onPress={props.changeModals}><Text style={styles.flipButtonText}>gallery</Text></TouchableOpacity>
-        </CameraView>
-      </View>
+        </View>
+        :
+        <View style={styles.container}>
+          <CameraView style={styles.camera} ref={cameraRef} mode="picture" facing={facing} onLayout={handleLayout}>
+            <View style={[styles.overlay, styles.topOverlay, { width: cameraWidth, height: deadAreaHeight }]} >
+              {props.photoPath ?
+                <View style={[styles.image, { width: 0.9 * deadAreaHeight, height: 0.9 * deadAreaHeight, marginLeft: 0.05 * deadAreaHeight, marginTop: 0.05 * deadAreaHeight }]}>
+                  <TouchableOpacity onPress={() => setIsOverlayImageVisible(true)}>
+                    <Image source={{ uri: props.photoPath }} resizeMode='cover' style={{width: '100%', height: '100%'}} />
+                  </TouchableOpacity>
+                </View>
+                :
+                <Text style={styles.caption}>Capture a picture of the wine label!</Text>
+              }
+            </View>
+            <View style={[styles.overlay, styles.bottomOverlay, { width: cameraWidth, height: (cameraHeight - cameraWidth) / 2 }]} />
+            <View style={styles.exitButtonContainer}>
+              <TouchableOpacity style={styles.exitButton} onPress={() => props.setModalVisible(false)}><Text style={styles.exitButtonText}>x</Text></TouchableOpacity>
+            </View>
+            <View style={styles.takePictureButtonContainer}>
+              <TouchableOpacity style={styles.takePictureButton} onPress={takePicture} />
+            </View>
+            <TouchableOpacity style={styles.flipButton} onPress={() => setFacing(current => (current === 'back' ? 'front' : 'back'))}><Text style={styles.flipButtonText}>flip</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.galleryButton} onPress={props.changeModals}><Text style={styles.flipButtonText}>gallery</Text></TouchableOpacity>
+          </CameraView>
+        </View>
+      }
     </SafeWrapper>
   );
 }
@@ -174,6 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
     justifyContent: 'center',
+    backgroundColor: colors.background,
   },
   caption: {
     position: 'absolute',
@@ -296,5 +330,11 @@ const styles = StyleSheet.create({
     // borderWidth: 2,
     margin: 1,
   },
+  capturedPhotoButton: {
+    flex: 1, justifyContent: 'center', borderColor: colors.accent, borderWidth: 1
+  },
+  capturedPhotoButtonText: {
+    color: 'white', textAlign: 'center', fontSize: 50
+  }
 
 });

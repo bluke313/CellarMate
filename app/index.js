@@ -32,13 +32,13 @@ export default function home() {
     const [wineList, setWineList] = useState([]);
     const [filteredWineList, setFilteredWineList] = useState([]);
     const [reload, setReload] = useState(0);
-    const [sortMenuVisible, setSortMenuVisible] = useState(false);
+    const [isSortMenuVisible, setIsSortMenuVisible] = useState(false);
     const [sorterAttribute, setSorterAttribute] = useState('date_created');
     const [sorterOrder, setSorterOrder] = useState('desc');
     const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(false);
     const [overlayImage, setOverlayImage] = useState(null);
-    const [overlayImageVisible, setOverlayImageVisible] = useState(false);
+    const [isOverlayImageVisible, setIsOverlayImageVisible] = useState(false);
     const [focusedItem, setFocusedItem] = useState(null);
 
     const sortMenuOptions = [
@@ -104,17 +104,17 @@ export default function home() {
     return (
         <SafeWrapper>
             <Modal
-                visible={overlayImageVisible}
+                visible={isOverlayImageVisible}
                 transparent
                 animationType='fade'
             >
-                <View style={styles.modalContainer} onTouchEnd={() => setOverlayImageVisible(false)}>
+                <View style={styles.modalContainer} onTouchEnd={() => setIsOverlayImageVisible(false)}>
                     <Image source={{ uri: `${photosDir}/${overlayImage}` }} resizeMode='fit' style={styles.overlayImage} />
                     {/* <Text style={{ color: 'white', fontSize: 50 }}>{overlayImage}</Text> */}
                 </View>
             </Modal>
             <Modal
-                visible={sortMenuVisible}
+                visible={isSortMenuVisible}
                 transparent
                 animationType='fade'
             >
@@ -122,7 +122,7 @@ export default function home() {
                     style={styles.modalContainer}
                     onTouchEnd={(e) => {
                         if (e.target === e.currentTarget) {
-                            setSortMenuVisible(false);
+                            setIsSortMenuVisible(false);
                         }
                     }}
                 >
@@ -131,7 +131,7 @@ export default function home() {
 
                         {sortMenuOptions.map((item, index) => (
                             <View key={index} style={styles.sortMenuOptionContainer}>
-                                <TouchableOpacity onPress={() => { setSorterAttribute(item.value); setSortMenuVisible(false) }}>
+                                <TouchableOpacity onPress={() => { setSorterAttribute(item.value); setIsSortMenuVisible(false) }}>
                                     <Text style={[styles.sortMenuText, sorterAttribute === item.value && { fontWeight: 'bold', color: 'black' }]}>{item.key}</Text>
                                 </TouchableOpacity>
                             </View>
@@ -153,7 +153,7 @@ export default function home() {
                         <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => setSearchValue('')}><Text style={{ color: colors.placeholderText, fontSize: 30 }}>x</Text></TouchableOpacity>
                     </View>
                     <View style={{ flexDirection: 'row', borderColor: colors.primary, borderRadius: 10, borderWidth: 2 }}>
-                        <TouchableOpacity onPress={() => setSortMenuVisible(true)} style={{ alignSelf: 'center' }}>
+                        <TouchableOpacity onPress={() => setIsSortMenuVisible(true)} style={{ alignSelf: 'center' }}>
                             <Text style={styles.text}>{sortMenuIcons[sorterAttribute]}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { if (sorterOrder === 'desc') { setSorterOrder('asc') } else { setSorterOrder('desc') } }} style={{ alignSelf: 'center' }}>
@@ -171,19 +171,19 @@ export default function home() {
                                 loading={loading}
                                 setOverlayImage={() => {
                                     setOverlayImage(item.photoUri);
-                                    setOverlayImageVisible(true);
+                                    setIsOverlayImageVisible(true);
                                 }}
                                 deleteItem={() => handleDelete(item.id)}
-                                isHighlighted={overlayImage === item.photoUri && overlayImageVisible || focusedItem === item.id}
+                                isHighlighted={overlayImage === item.photoUri && isOverlayImageVisible || focusedItem === item.id}
                             />
                         )}
-                        style={{ marginBottom: 75 }}
+                        style={{ marginBottom: 175 }}
                     />
                     {filteredWineList.length === 0 && wineList.length !== 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center' }}>No results</Text>}
                     {wineList.length === 0 && <Text style={{ color: colors.placeholderText, textAlign: 'center', marginTop: 150 }}>Tap + to add your first wine!</Text>}
                 </View>
                 <TouchableOpacity onPress={() => router.push("/newEntry")} style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+</Text>
+                    <Text style={{color: colors.text, fontSize: 50, textAlign: 'center',}}>+</Text>
                 </TouchableOpacity>
             </View>
         </SafeWrapper>
@@ -209,9 +209,9 @@ const styles = StyleSheet.create({
     },
     addButton: {
         flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'space-around',
         position: 'absolute',
+        flexDirection: 'column',
+        justifyContent: 'center',
         bottom: 20,
         borderWidth: 2,
         borderColor: colors.secondary,
@@ -222,11 +222,6 @@ const styles = StyleSheet.create({
         height: 80,
         width: 80,
         margin: 20,
-    },
-    addButtonText: {
-        color: colors.text,
-        fontSize: 50,
-        textAlign: 'center',
     },
     modalContainer: {
         flex: 1,
